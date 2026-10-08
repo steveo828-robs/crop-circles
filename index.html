@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crop Circles — Gallery</title>
+  <meta name="theme-color" content="#0c0e12" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Crop Circles" />
+  <meta name="application-name" content="Crop Circles" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="top-row">
+      <h1>Crop Circles</h1>
+      <nav class="nav" aria-label="Primary">
+        <a href="#gallery" class="nav-link active" data-view="gallery">Gallery</a>
+        <a href="#evidence" class="nav-link" data-view="evidence">Evidence</a>
+      </nav>
+    </div>
+    <div class="filters" id="galleryFilters">
+      <select id="yearFilter" aria-label="Year">
+        <option value="all">All years</option>
+      </select>
+      <label class="chk"><input type="checkbox" id="meaningFilter" /> Has meaning</label>
+      <label class="chk"><input type="checkbox" id="anomalyFilter" /> Has strange findings</label>
+      <input id="search" type="search" placeholder="Search…" aria-label="Search" autocomplete="off" />
+      <span id="count" class="count"></span>
+    </div>
+  </header>
+
+  <main id="gallery" class="gallery" aria-live="polite"></main>
+
+  <section id="evidence" class="evidence hidden" aria-label="Evidence">
+    <h2>Strange findings</h2>
+    <p class="evidence-lede">
+      Published plant and field reports — including bent or elongated stem nodes and expulsion cavities —
+      from researchers such as the BLT Research Team. Claims are attributed to those sources;
+      this gallery does not assess how formations are made.
+    </p>
+    <div id="evidenceGrid" class="evidence-grid"></div>
+    <ul class="evidence-sources">
+      <li><a href="http://bltresearch.com/plantab.php" target="_blank" rel="noopener">BLT Research — Plant Abnormalities</a></li>
+      <li><a href="https://www.cropcirclearchives.co.uk/archives/2001/MilkHill2/milkhill2001a.html" target="_blank" rel="noopener">Crop Circle Connector archive — Milk Hill 2001</a></li>
+    </ul>
+  </section>
+
+  <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <div class="sheet">
+      <button id="closeDetail" class="x" aria-label="Close">×</button>
+      <div id="detail"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    Real photographed formations. Shapes, meanings and reported anomalies as published by researchers and observers.
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./service-worker.js", { scope: "./" }).then(function () {
+          return navigator.serviceWorker.ready;
+        }).then(function (reg) {
+          // Background warm-up of gallery photos so the app works offline after the first visit.
+          var conn = navigator.connection || {};
+          if (conn.saveData || !reg.active) return;
+          fetch("crop-circles.json").then(function (r) { return r.json(); }).then(function (data) {
+            var urls = [];
+            (Array.isArray(data) ? data : []).forEach(function (it) {
+              if (it.imageUrl) urls.push(it.imageUrl);
+              (it.extraImages || []).forEach(function (ex) { var u = typeof ex === "string" ? ex : ex && ex.url; if (u) urls.push(u); });
+              (it.anomalies || []).forEach(function (a) { (a.images || []).forEach(function (u) { urls.push(u); }); });
+            });
+            reg.active.postMessage({ type: "warm-images", urls: urls });
+          }).catch(function () {});
+        }).catch(function () {});
+      });
+    }
+  </script>
+</body>
+</html>
