@@ -1,15 +1,23 @@
 /* Crop Circles — service worker (relative paths; works under any GitHub Pages subpath) */
 "use strict";
 
-const VERSION = "v1";
+const VERSION = "v2-hotspots";
 const SHELL_CACHE = "crop-circles-shell-" + VERSION;
-const IMAGE_CACHE = "crop-circles-images-" + VERSION;
+const IMAGE_CACHE = "crop-circles-images-v1"; // photos unchanged; keep this cache across shell updates
 
 const SHELL = [
   "./",
   "index.html",
   "styles.css",
   "app.js",
+  "hotspots.js",
+  "vendor/leaflet/leaflet.js",
+  "vendor/leaflet/leaflet.css",
+  "vendor/leaflet/images/layers.png",
+  "vendor/leaflet/images/layers-2x.png",
+  "vendor/leaflet/images/marker-icon.png",
+  "vendor/leaflet/images/marker-icon-2x.png",
+  "vendor/leaflet/images/marker-shadow.png",
   "crop-circles.json",
   "manifest.webmanifest",
   "icons/icon-192.png",

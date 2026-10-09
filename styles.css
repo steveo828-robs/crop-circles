@@ -572,3 +572,185 @@ body {
   line-height: 1.45;
   border-top: 1px solid var(--line-soft);
 }
+
+/* —— Nav: bigger tap targets for 3 tabs —— */
+.top-row { flex-wrap: wrap; align-items: center; row-gap: 0.5rem; }
+.nav-link { padding: 0.5rem 0.8rem; font-size: 0.88rem; min-height: 2.5rem; display: inline-flex; align-items: center; }
+
+/* —— Repeat-site badge & place filter chip —— */
+.badge.repeat {
+  color: #d9b8ff;
+  border-color: rgba(190, 150, 255, 0.4);
+}
+
+.place-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+  padding: 0.35rem 0.4rem 0.35rem 0.8rem;
+  background: rgba(196, 165, 116, 0.1);
+  border: 1px solid rgba(196, 165, 116, 0.4);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.88rem;
+}
+.place-chip.hidden { display: none; }
+.place-chip button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.82rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+}
+
+.repeat-line {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  margin: -0.4rem 0 1rem;
+  padding: 0.6rem 0.75rem;
+  min-height: 2.75rem;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+.repeat-line:hover { border-color: var(--line); color: var(--text); }
+
+/* —— Hotspots —— */
+.hotspots {
+  padding: 1.25rem 1rem 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+  flex: 1;
+  width: 100%;
+}
+.hotspots.hidden { display: none; }
+.hotspots > h2 { margin: 0 0 0.4rem; font-size: 1.15rem; font-weight: 600; letter-spacing: -0.01em; }
+
+.hotspot-map {
+  height: 280px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background: #0f1217;
+  z-index: 0;
+}
+@media (min-width: 700px) { .hotspot-map { height: 380px; } }
+.map-off { color: var(--faint); text-align: center; padding: 6rem 1rem; margin: 0; }
+.map-note { color: var(--faint); font-size: 0.78rem; line-height: 1.45; margin: 0.55rem 0 1.1rem; }
+
+.leaflet-container { font-family: inherit; background: #0f1217; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--text); border: 1px solid var(--line); }
+.leaflet-popup-content { margin: 0.75rem 0.9rem; font-size: 0.88rem; line-height: 1.45; }
+.leaflet-container a.leaflet-popup-close-button { color: var(--muted); }
+.leaflet-control-attribution { background: rgba(12, 14, 18, 0.75) !important; color: var(--faint) !important; font-size: 10px; }
+.leaflet-control-attribution a { color: var(--muted) !important; }
+.leaflet-bar a { background: var(--surface); color: var(--text); border-color: var(--line); }
+.popup-show {
+  margin-top: 0.5rem;
+  background: var(--card);
+  color: var(--accent);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  min-height: 2.4rem;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.hotspot-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.hs-item {
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.hs-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.8rem 0.9rem;
+  min-height: 3.5rem;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.hs-head:hover { background: var(--card-hover); }
+.hs-rank {
+  flex: 0 0 auto;
+  width: 1.8rem; height: 1.8rem;
+  border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 600;
+  color: var(--gold);
+  border: 1px solid rgba(196, 165, 116, 0.4);
+}
+.hs-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.hs-name { font-weight: 600; font-size: 0.98rem; line-height: 1.3; }
+.hs-where { color: var(--faint); font-size: 0.78rem; }
+.hs-count { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
+.hs-count b { font-size: 1.25rem; color: var(--gold); }
+.hs-count small { color: var(--faint); font-size: 0.72rem; }
+.hs-sub { margin: -0.3rem 0.9rem 0.5rem 3.45rem; color: var(--muted); font-size: 0.76rem; line-height: 1.4; }
+.hs-strip {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding: 0 0.9rem 0.9rem;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.hs-thumb {
+  flex: 0 0 auto;
+  width: 112px;
+  padding: 0;
+  background: #000;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  color: var(--muted);
+  font: inherit;
+}
+.hs-thumb img { width: 112px; height: 84px; object-fit: contain; background: #000; display: block; }
+.hs-thumb span { font-size: 0.7rem; padding: 0.2rem 0; background: var(--surface); text-align: center; }
+
+/* —— Orb footage card —— */
+.orb-card {
+  background: var(--card);
+  border: 1px solid rgba(196, 165, 116, 0.35);
+  border-radius: var(--radius);
+  padding: 0.9rem;
+  margin: 0 0 1.6rem;
+}
+.orb-card:empty { display: none; }
+.orb-kicker { margin: 0 0 0.55rem; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+.video-wrap { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 10px; overflow: hidden; }
+.video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.orb-card h2 { margin: 0.8rem 0 0.2rem; font-size: 1.05rem; }
+.orb-card .meta { color: var(--muted); font-size: 0.82rem; margin: 0 0 0.6rem; }
+.orb-card p { font-size: 0.88rem; line-height: 1.5; margin: 0 0 0.55rem; }
+.orb-card .attrib { color: var(--faint); font-size: 0.78rem; }
+.orb-card .links { gap: 0.5rem 0.9rem; }
+.orb-card .links a { padding: 0.35rem 0; font-size: 0.8rem; color: var(--muted); }
+/* OpenStreetMap tiles dimmed to match the dark theme */
+.dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.85) saturate(0.6); }

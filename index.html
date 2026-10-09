@@ -14,6 +14,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -22,6 +23,7 @@
       <h1>Crop Circles</h1>
       <nav class="nav" aria-label="Primary">
         <a href="#gallery" class="nav-link active" data-view="gallery">Gallery</a>
+        <a href="#hotspots" class="nav-link" data-view="hotspots">Hotspots</a>
         <a href="#evidence" class="nav-link" data-view="evidence">Evidence</a>
       </nav>
     </div>
@@ -34,11 +36,24 @@
       <input id="search" type="search" placeholder="Search…" aria-label="Search" autocomplete="off" />
       <span id="count" class="count"></span>
     </div>
+    <div id="placeChip" class="place-chip hidden">
+      <span id="placeChipText"></span>
+      <button type="button" id="placeChipClear" aria-label="Show all places">× Show all</button>
+    </div>
   </header>
 
   <main id="gallery" class="gallery" aria-live="polite"></main>
 
+  <section id="hotspots" class="hotspots hidden" aria-label="Hotspots">
+    <h2>Hotspots</h2>
+    <p class="evidence-lede" id="hotspotsLede">Places where more than one formation in this gallery has been recorded.</p>
+    <div id="hotspotMap" class="hotspot-map" role="region" aria-label="Map of formation locations"></div>
+    <p class="map-note" id="mapNote"></p>
+    <ol id="hotspotList" class="hotspot-list"></ol>
+  </section>
+
   <section id="evidence" class="evidence hidden" aria-label="Evidence">
+    <div id="orbCard" class="orb-card"></div>
     <h2>Strange findings</h2>
     <p class="evidence-lede">
       Published plant and field reports — including bent or elongated stem nodes and expulsion cavities —
@@ -63,9 +78,18 @@
     Real photographed formations. Shapes, meanings and reported anomalies as published by researchers and observers.
   </footer>
 
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="hotspots.js"></script>
   <script src="app.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
+      // When an updated service worker takes over, reload once so phones see the new version.
+      var hadController = !!navigator.serviceWorker.controller, reloaded = false;
+      navigator.serviceWorker.addEventListener("controllerchange", function () {
+        if (!hadController || reloaded) return;
+        reloaded = true;
+        window.location.reload();
+      });
       window.addEventListener("load", function () {
         navigator.serviceWorker.register("./service-worker.js", { scope: "./" }).then(function () {
           return navigator.serviceWorker.ready;
