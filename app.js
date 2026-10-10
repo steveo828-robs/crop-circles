@@ -280,176 +280,150 @@
       `<li><p>${esc(text)}</p><p class="cl-src">${srcLinks(keys)}</p></li>`).join("")}</ul>`;
   }
 
+  let claimsStep = 1;
+  let claimsSeries = "world";
+
   function renderClaims() {
     if (claimsBody.dataset.ready) return;
     const C = window.CC_CLAIMS;
-    if (!C) { claimsBody.innerHTML = '<p class="map-off">Claims content unavailable.</p>'; return; }
-    const P = C.plain || {};
-    document.getElementById("claimsLede").textContent = P.lede || C.lede;
-
+    if (!C || !C.story) { claimsBody.innerHTML = '<p class="map-off">Claims content unavailable.</p>'; return; }
+    const ST = C.story;
+    document.getElementById("claimsLede").textContent = ST.intro;
     const uniq = (a) => [...new Set(a)];
-    const keysOf = (items) => uniq(items.flatMap(([, ...k]) => k));
-    const tagC = '<span class="tag tag-claimed">Claimed man-made</span>';
-    const tagU = '<span class="tag tag-unexpl">Reported unexplained</span>';
-    const more = (label, html) => html ? `<details class="cl-more"><summary>${esc(label)}</summary><div class="cl-more-body">${html}</div></details>` : "";
-    const sources = (keys) => keys.length ? more(`Sources (${keys.length})`, `<ul class="cl-srclist">${uniq(keys).map((k) => `<li>${srcLinks([k])}</li>`).join("")}</ul>`) : "";
-    const card = (o) => `<article class="cl-card${o.cls ? " " + o.cls : ""}"${o.id ? ` id="${o.id}"` : ""}>
-        ${o.tag || ""}<h4>${esc(o.title)}</h4>
-        ${o.take ? `<p class="cl-take">${esc(o.take)}</p>` : ""}
-        ${o.body || ""}
-        ${o.more || ""}
-        ${sources(o.src || [])}
+    const keysOf = (items) => items.flatMap(([, ...k]) => k);
+    const tagC = '<span class="st-tag c">Claimed man-made</span>';
+    const tagU = '<span class="st-tag u">Reported unexplained</span>';
+    const sub = (title, html) => `<h5 class="st-sub">${esc(title)}</h5>${html}`;
+    const srcBlock = (html, keys) => `<details class="st-src"><summary>Sources &amp; more</summary><div class="st-src-body">${html}
+        <h5 class="st-sub">All sources</h5><ul class="st-srclist">${uniq(keys).map((k) => `<li>${srcLinks([k])}</li>`).join("")}</ul></div></details>`;
+    const ch = (n, d, visual, more, keys) => `
+      <article class="st-ch${n === claimsStep ? "" : " hidden"}" data-ch="${n}" aria-labelledby="st-h${n}">
+        <p class="st-count">Step ${n} of 6</p>
+        <h3 id="st-h${n}">${esc(d.head)}</h3>
+        <p class="st-take">${esc(d.take)}</p>
+        ${visual}
+        ${srcBlock(more, keys)}
+        <div class="st-nav">
+          ${n > 1 ? `<button type="button" class="st-btn ghost" data-step="${n - 1}">\u2190 Back</button>` : "<span></span>"}
+          ${n < 6 ? `<button type="button" class="st-btn" data-step="${n + 1}">Next \u2192</button>` : `<button type="button" class="st-btn ghost" data-step="1">Start again</button>`}
+        </div>
       </article>`;
 
-    /* 1 · Who */
-    const who = C.claimants.map((c) => card({
-      title: c.title, take: (P.cards || {})[c.title],
-      body: `<p class="cl-sub">${esc(c.sub)}</p>`,
-      more: more("More detail", pointList(c.points)) +
-            (c.counter && c.counter.length ? more("The other side", pointList(c.counter, "counter")) : "") +
-            (c.note ? `<p class="cl-note">${esc(c.note)}</p>` : "") +
-            (c.links ? `<div class="links">${c.links.map(([l, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(l)} \u2197</a>`).join("")}</div>` : ""),
-      src: keysOf(c.points.concat(c.counter || [])).concat(c.noteSrc || [])
-    })).join("");
-
-    const BY = C.byYear;
-    let byYear = "";
-    if (BY) {
-      const years = new Set();
-      BY.series.forEach((sr) => Object.keys(sr.data).forEach((y) => years.add(+y)));
-      const ys = [...years].sort((a, b) => a - b);
-      const max = Math.max(...BY.series.flatMap((sr) => Object.values(sr.data)));
-      const ours = {};
-      allData.forEach((d) => { if (d.year) ours[d.year] = (ours[d.year] || 0) + 1; });
-      const bars = ys.map((y) => `<li><span class="by-y">${y}</span><span class="by-bars">${BY.series.map((sr) => {
-          const v = sr.data[y];
-          return v == null ? `<span class="by-row ${sr.key} gap"><em>\u2014</em></span>`
-            : `<span class="by-row ${sr.key}"><i style="width:${Math.max(1.5, (v / max) * 85).toFixed(1)}%"></i><em>${v}</em></span>`;
-        }).join("")}</span><span class="by-ours">${ours[y] || ""}</span></li>`).join("");
-      byYear = card({
-        id: "cl-years", title: "How many were found each year?", take: P.years,
-        body: `<div class="by-legend">${BY.series.map((sr) => `<span class="${sr.key}"><i></i><span>${esc(sr.label)}</span></span>`).join("")}<span class="ours"><b>#</b><span>In this app’s gallery</span></span></div>
-          <ul class="by-chart">${bars}</ul>`,
-        more: more("Why the counts disagree", `<p class="cl-p">${esc(BY.intro)}</p><p class="cl-p">${esc(BY.chartNote)}</p>`) +
-              more("Other published totals", pointList(BY.points)),
-        src: BY.series.flatMap((sr) => sr.src).concat(keysOf(BY.points))
-      });
-    }
-
+    /* 1 */
+    const D = C.claimants;
+    const c1 = ST.ch1;
+    const v1 = `<div class="st-stack">${c1.people.map((p) => `
+        <div class="st-panel c">${tagC}<h4>${esc(p.name)}</h4><p>${esc(p.line)}</p></div>`).join("")}</div>`;
     const G = C.gallery;
-    const gal = G ? card({
-      title: "Formations people said they made", take: P.gallery,
-      body: `<div class="cl-gallery">${G.items.map((g) => `
-        <div class="cl-gtile">
-          ${g.img ? `<img src="${esc(g.img)}" alt="${esc(g.imgAlt || g.title)}" loading="lazy" /><span class="cl-gkind">${esc(g.imgKind || "")}</span>`
-                  : `<a class="cl-gph" href="${esc(g.link)}" target="_blank" rel="noopener"><span>No licensed photo</span><b>See photos \u2197</b><small>${esc(g.linkLabel)}</small></a>`}
-          ${tagC}
-          <span class="cl-tile-t">${esc(g.title)}</span>
-          <span class="cl-tile-d">${esc(g.date)} \u00b7 ${esc(g.where)}</span>
-          <span class="cl-tile-d">By: ${esc(g.who)}</span>
-          <span class="cl-src">${srcLinks(g.src)}${g.imgCredit ? " \u00b7 " + srcLinks(g.imgCredit) : ""}</span>
-        </div>`).join("")}</div>`,
-      more: `<p class="cl-note">${esc(G.noPhotoNote)}</p>`,
-      src: G.items.flatMap((g) => g.src.concat(g.imgCredit || []))
-    }) : "";
+    const m1 = sub("Doug & Dave", pointList(D[0].points.slice(0, 4))) +
+      sub("The other side", pointList(D[0].counter, "counter")) +
+      sub("Circlemakers", pointList(D[1].points.slice(0, 3))) +
+      sub("Other claims", pointList(D[2].points.slice(0, 2))) +
+      (G ? sub("Formations people said they made", `<ul class="st-links">${G.items.map((g) => `<li><b>${esc(g.title)}</b> (${esc(g.date)}) \u2014 ${esc(g.who)}. ${g.link ? `<a href="${esc(g.link)}" target="_blank" rel="noopener">${esc(g.linkLabel)} \u2197</a>` : srcLinks(g.src)}</li>`).join("")}</ul><p class="st-p">${esc(G.noPhotoNote)}</p>`) : "");
+    const k1 = c1.people.flatMap((p) => p.src).concat(keysOf(D[0].points.slice(0, 4)), keysOf(D[0].counter), keysOf(D[1].points.slice(0, 3)), keysOf(D[2].points.slice(0, 2)), G ? G.items.flatMap((g) => g.src) : []);
 
-    /* 2 · Compare */
-    const tiles = C.compare.tiles.map((t) => {
-      if (t.kind === "photo") {
-        const it = allData.find((d) => d.id === t.id);
-        if (!it) return "";
-        return `<button type="button" class="cl-tile photo" data-id="${esc(it.id)}">
-          <img src="${esc(it.imageUrl)}" alt="${esc(t.title)}" loading="lazy" />
-          <span class="cl-tile-t">${esc(t.title)}</span>
-          <span class="cl-tile-d">${esc(t.text)}</span>
-        </button>`;
-      }
-      return `<div class="cl-tile text">
-        <span class="cl-tile-big">\u25ef</span>
-        ${tagC}
-        <span class="cl-tile-t">${esc(t.title)}</span>
-        <span class="cl-tile-d">${esc(t.text)}</span>
-        <span class="cl-src">${srcLinks(t.src)}${t.link ? ` \u00b7 <a href="${esc(t.link)}" target="_blank" rel="noopener">${esc(t.linkLabel)} \u2197</a>` : ""}</span>
+    /* 2 */
+    const c2 = ST.ch2;
+    const mh = allData.find((d) => d.id === c2.photoId);
+    const v2 = `<div class="st-pair">
+        <div class="st-half">${tagC}<div class="st-ring" aria-hidden="true"><span></span></div>
+          <h4>${esc(c2.ring.title)}</h4><p>${esc(c2.ring.quote)}</p></div>
+        <div class="st-half">${tagU}${mh ? `<button type="button" class="st-photo" data-id="${esc(mh.id)}"><img src="${esc(mh.imageUrl)}" alt="${esc(c2.photoTitle)}" loading="lazy" /></button>` : ""}
+          <h4>${esc(c2.photoTitle)}</h4><p>${esc(c2.photoLine)}</p></div>
       </div>`;
-    }).join("");
-    const tilesCard = card({ title: "Then and now", take: P.tiles, body: `<div class="cl-tiles">${tiles}</div><p class="cl-hint">Tap a photo to open it.</p>`, src: ["today91", "smithsonian"] });
+    const m2 = sub("More", `<ul class="st-links"><li>Doug & Dave called it “the hallmark basic ring they have done since 1978”. ${srcLinks(["today91"])}</li>
+        <li>Photos of Doug & Dave at work: <a href="https://www.smithsonianmag.com/arts-culture/crop-circles-the-art-of-the-hoax-2524283/" target="_blank" rel="noopener">Smithsonian \u2197</a></li>
+        <li>Milk Hill photo: ${esc(mh ? mh.photoCredit || "" : "")}. Tap it to open the gallery entry.</li></ul>`);
+    const k2 = c2.ring.src.concat(c2.photoSrc, ["smithsonian"]);
 
-    const plants = card({
-      title: "Bent or broken stalks?", take: P.plants,
-      body: C.compare.image ? `<figure class="cl-fig big">${tagU}<img src="${esc(C.compare.image.url)}" alt="${esc(C.compare.image.caption)}" loading="lazy" /><figcaption>${esc(C.compare.image.caption)}</figcaption></figure>` : "",
-      more: more("What the researchers report", pointList(C.compare.plants)) + more("The other side", pointList(C.compare.plantCounter, "counter")),
-      src: keysOf(C.compare.plants.concat(C.compare.plantCounter))
-    });
+    /* 3 */
+    const c3 = ST.ch3, CP = C.compare, LY = C.lay;
+    const v3 = `<figure class="st-fig">${tagU}<img src="${esc(c3.img)}" alt="${esc(c3.caption)}" loading="lazy" /><figcaption>${esc(c3.caption)}</figcaption></figure>
+      <p class="st-missing">${tagC}<span>${esc(c3.missing)}</span></p>`;
+    const m3 = sub("What BLT Research reports", pointList(CP.plants.slice(0, 3))) +
+      sub("The other side", pointList(CP.plantCounter, "counter")) +
+      sub("Claimed man-made: where to look", pointList(LY.claimed, "counter"));
+    const k3 = keysOf(CP.plants.slice(0, 3)).concat(keysOf(CP.plantCounter), keysOf(LY.claimed), ["blt"]);
 
-    const LY = C.lay;
-    const lay = LY ? card({
-      title: "Up close: the flattened crop", take: P.lay,
-      body: `<div class="cl-lay">
-          <div class="cl-lay-col claimed">${tagC}
-            <div class="cl-lay-ph"><span>No licensed close-up found</span><small>See the links below</small></div>
-          </div>
-          <div class="cl-lay-col reported">${tagU}
-            <figure class="cl-fig"><img src="${esc(LY.reported[0].img)}" alt="${esc(LY.reported[0].text)}" loading="lazy" />
-              <figcaption>${esc(LY.reported[0].label)}: ${esc(LY.reported[0].text)}</figcaption></figure>
-          </div>
-        </div>`,
-      more: more("Claimed man-made: where to see it", `<p class="cl-p">${esc(LY.claimedNote)}</p>${pointList(LY.claimed, "counter")}`) +
-            more("Reported unexplained: more photos", LY.reported.slice(1).map((r) => `<figure class="cl-fig big"><img src="${esc(r.img)}" alt="${esc(r.text)}" loading="lazy" /><figcaption>${esc(r.label)}: ${esc(r.text)} <span class="cl-src">${srcLinks(r.src)}</span></figcaption></figure>`).join("")) +
-            (LY.counterNote ? more("The other side", pointList([LY.counterNote], "counter")) : ""),
-      src: keysOf(LY.claimed).concat(LY.reported.flatMap((r) => r.src)).concat(LY.counterNote ? LY.counterNote.slice(1) : [])
-    }) : "";
+    /* 4 */
+    const c4 = ST.ch4, T = C.timing;
+    const row = (b) => `<li><b>${esc(b.name)} <span class="st-yr">${esc(b.year)}</span></b><em>${esc(b.time)}${/not stated/i.test(b.light) ? "" : ` \u00b7 ${esc(b.light.toLowerCase())}`}</em><small>${srcLinks(b.src.slice(0, 1))}</small></li>`;
+    const top = c4.topIds.map((n) => T.builds.find((b) => b.name === n)).filter(Boolean);
+    const v4 = `<div class="st-pair stats">
+        <div class="st-stat c"><b>${esc(c4.statA.big)}</b><span>${esc(c4.statA.small)}</span></div>
+        <div class="st-stat u"><b>${esc(c4.statB.big)}</b><span>${esc(c4.statB.small)}</span></div>
+      </div>
+      <h4 class="st-listhead">Longest paid builds</h4>
+      <ul class="st-rows">${top.map(row).join("")}</ul>
+      <details class="st-all"><summary>See all ${T.builds.length} reported build times</summary><ul class="st-rows">${T.builds.map(row).join("")}</ul></details>`;
+    const julia = T.rows[0], milk = T.rows[1];
+    const m4 = sub("Julia Set, 1996", pointList(julia.build.concat(julia.window))) +
+      sub("Milk Hill, 2001", pointList(milk.build.concat(milk.window))) +
+      `<p class="st-p">${esc(T.note)}</p>`;
+    const k4 = c4.statA.src.concat(c4.statB.src, T.builds.flatMap((b) => b.src), keysOf(julia.build.concat(julia.window, milk.build, milk.window)));
 
-    /* 3 · Time */
-    const T = C.timing;
-    const buildLi = (b) => `
-      <li class="cl-build${/day/i.test(b.time) && !/window|under/i.test(b.time) ? " multi" : ""}">
-        <div class="cl-build-top"><b>${esc(b.name)}</b><span class="cl-build-time">${esc(b.time)}</span></div>
-        <p class="cl-build-meta">${esc(b.year)} \u00b7 ${esc(b.light)} \u00b7 team: ${esc(b.team)}</p>
-        ${more("Details", `<p class="cl-p">${esc(b.where)} \u00b7 size: ${esc(b.size)}</p><p class="cl-p">${esc(b.note)}</p><p class="cl-src">${srcLinks(b.src)}</p>`)}
-      </li>`;
-    const stat = (s, cls) => `<div class="cl-stat ${cls}"><b>${esc(s.big)}</b><span>${esc(s.small)}</span></div>`;
-    const lead = card({
-      cls: "cl-lead", title: "Time to build vs time available", take: P.time,
-      body: `<div class="cl-stats">${stat(P.statA, "a")}${stat(P.statB, "b")}</div>
-        <div class="cl-vs">
-          <a href="#cl-builds" data-jump="cl-builds"><b>Paid builds \u2193</b><span>${T.builds.length} reported times</span></a>
-          <a href="#cl-windows" data-jump="cl-windows"><b>Overnight ones \u2193</b><span>${T.rows.length} unclaimed formations</span></a>
-        </div>`,
-      more: more("Read the summary", `<p class="cl-p">${esc(T.lead.text)}</p>`),
-      src: uniq(T.lead.src.concat(P.statA.src, P.statB.src))
-    });
-    const builds = card({
-      id: "cl-builds", tag: tagC, title: "Paid builds: how long the makers said", take: "Longest first. Gold edge = more than one day.",
-      body: `<ul class="cl-builds">${T.builds.slice(0, 6).map(buildLi).join("")}</ul>
-        ${more(`Show all ${T.builds.length}`, `<ul class="cl-builds">${T.builds.slice(6).map(buildLi).join("")}</ul>`)}`,
-      more: `<p class="cl-note">${esc(T.note)}</p>`,
-      src: T.builds.flatMap((b) => b.src)
-    });
-    const rows = T.rows.map((r) => {
-      const w = (P.windows || {})[r.name] || ["", ""];
-      return card({
-        cls: "cl-time", title: r.name, take: r.date,
-        body: `<div class="cl-pair">
-            <div class="cl-pair-a">${/^Claimed/.test(w[0]) ? tagC : '<span class="tag tag-none">No claim</span>'}<p>${esc(w[0])}</p></div>
-            <div class="cl-pair-b">${tagU}<p>${esc(w[1])}</p></div>
-          </div>`,
-        more: more("Build time — details", pointList(r.build)) + more("The window — details", pointList(r.window)),
-        src: keysOf(r.build.concat(r.window))
-      });
-    }).join("");
+    /* 5 */
+    const c5 = ST.ch5;
+    const quote = (q) => `<blockquote class="st-q"><p>${esc(q.q)}</p><cite>${esc(q.who)}</cite></blockquote>`;
+    const v5 = `<div class="st-pair">
+        <div class="st-half"><span class="st-tag n">No errors</span>${c5.none.map(quote).join("")}</div>
+        <div class="st-half"><span class="st-tag n">Errors found</span>${c5.some.map(quote).join("")}</div>
+      </div>`;
+    const nE = [0, 1, 3].map((i) => C.mistakes.noErrors[i]), yE = [1, 3].map((i) => C.mistakes.errors[i]);
+    const m5 = sub("“No errors” — more", pointList(nE)) + sub("Errors — more", pointList(yE, "counter"));
+    const k5 = c5.none.concat(c5.some).flatMap((q) => q.src).concat(keysOf(nE), keysOf(yE));
 
-    /* 4 · Mistakes */
-    const mNo = card({ title: "“No mistakes”", take: P.noErrors, more: more("Who says so", pointList(C.mistakes.noErrors)), src: keysOf(C.mistakes.noErrors) });
-    const mYes = card({ title: "Reported mistakes", take: P.errors, more: more("Examples", pointList(C.mistakes.errors, "counter")), src: keysOf(C.mistakes.errors) });
+    /* 6 */
+    const BY = C.byYear;
+    const v6 = `<div class="st-seg" role="group" aria-label="Count">
+        ${BY.series.map((sr) => `<button type="button" data-series="${sr.key}" aria-pressed="${sr.key === claimsSeries}">${sr.key === "world" ? "Worldwide" : "England"}</button>`).join("")}
+      </div>
+      <div class="st-chart" id="stChart"></div>
+      <p class="st-readout" id="stReadout"></p>`;
+    const m6 = sub("Why counts disagree", `<p class="st-p">${esc(BY.intro)}</p>`) + sub("Other published totals", pointList(BY.points)) + `<p class="st-p">${esc(BY.chartNote.replace(/ The right-hand number.*$/, ""))}</p>`;
+    const k6 = BY.series.flatMap((sr) => sr.src).concat(keysOf(BY.points));
 
-    const H = P.heads || {};
     claimsBody.innerHTML = `
-      <section class="cl-sec" id="cl-who"><h3>1 \u00b7 ${esc(H.who || "Who claimed")}</h3>${who}${gal}${byYear}</section>
-      <section class="cl-sec" id="cl-compare"><h3>2 \u00b7 ${esc(H.compare || "Simple vs complex")}</h3>${tilesCard}${plants}${lay}</section>
-      <section class="cl-sec" id="cl-time"><h3>3 \u00b7 ${esc(H.time || "Time vs window")}</h3>${lead}${builds}
-        <div id="cl-windows" class="cl-anchor"></div>${rows}</section>
-      <section class="cl-sec" id="cl-mistakes"><h3>4 \u00b7 ${esc(H.mistakes || "Mistakes?")}</h3>${mNo}${mYes}</section>`;
+      <nav class="st-chips" aria-label="Steps">${[1, 2, 3, 4, 5, 6].map((n) => `<button type="button" data-step="${n}" aria-label="Step ${n}: ${esc(ST["ch" + n].head)}"${n === claimsStep ? ' aria-current="step"' : ""}>${n}</button>`).join("")}</nav>
+      ${ch(1, c1, v1, m1, k1)}${ch(2, c2, v2, m2, k2)}${ch(3, c3, v3, m3, k3)}${ch(4, c4, v4, m4, k4)}${ch(5, c5, v5, m5, k5)}${ch(6, ST.ch6, v6, m6, k6)}`;
     claimsBody.dataset.ready = "1";
+    drawYearChart();
+  }
+
+  function drawYearChart() {
+    const BY = window.CC_CLAIMS.byYear;
+    const el = document.getElementById("stChart");
+    if (!el) return;
+    const sr = BY.series.find((s) => s.key === claimsSeries) || BY.series[0];
+    const all = BY.series.flatMap((s) => Object.keys(s.data).map(Number));
+    const y0 = Math.min(...all), y1 = Math.max(...all);
+    const max = Math.max(...Object.values(sr.data));
+    let peakY = y0;
+    Object.entries(sr.data).forEach(([y, v]) => { if (v === max) peakY = +y; });
+    const bars = [];
+    for (let y = y0; y <= y1; y++) {
+      const v = sr.data[y];
+      bars.push(v == null ? `<span class="st-bar none" title="${y}: no sourced figure"></span>`
+        : `<button type="button" class="st-bar${y === peakY ? " peak" : ""}" data-y="${y}" data-v="${v}" style="height:${Math.max(2, (v / max) * 100).toFixed(1)}%" aria-label="${y}: ${v}"></button>`);
+    }
+    const ticks = [];
+    for (let y = Math.ceil(y0 / 10) * 10; y <= y1; y += 10) ticks.push(`<span style="left:${(((y - y0) + 0.5) / (y1 - y0 + 1) * 100).toFixed(2)}%">${y}</span>`);
+    const last = Math.max(...Object.keys(sr.data).map(Number));
+    el.innerHTML = `<div class="st-bars ${sr.key}">${bars.join("")}</div><div class="st-ticks">${ticks.join("")}</div>`;
+    const ro = document.getElementById("stReadout");
+    ro.dataset.def = `Peak: ${max} in ${peakY} \u00b7 ${last}: ${sr.data[last]}. Tap a bar for its year.`;
+    ro.innerHTML = `${esc(ro.dataset.def)}<br><span class="cl-src">${esc(sr.label)} \u00b7 ${srcLinks(sr.src)}</span>`;
+  }
+
+  function goStep(n) {
+    claimsStep = Math.min(6, Math.max(1, n));
+    claimsView.querySelectorAll(".st-ch").forEach((a) => a.classList.toggle("hidden", +a.dataset.ch !== claimsStep));
+    claimsView.querySelectorAll(".st-chips button").forEach((b) => {
+      if (+b.dataset.step === claimsStep) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+    });
+    const lede = document.getElementById("claimsLede");
+    const y = lede.getBoundingClientRect().bottom + window.scrollY + 16 - 122;
+    window.scrollTo({ top: Math.max(0, y), behavior: "auto" });
   }
 
   function renderHotspots() {
@@ -548,14 +522,24 @@
   }
 
   claimsView.addEventListener("click", (e) => {
-    const j = e.target.closest("[data-jump]");
-    if (j) {
-      e.preventDefault();
-      const el = document.getElementById(j.dataset.jump);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    const st = e.target.closest("[data-step]");
+    if (st) { goStep(+st.dataset.step); return; }
+    const se = e.target.closest("[data-series]");
+    if (se) {
+      claimsSeries = se.dataset.series;
+      claimsView.querySelectorAll("[data-series]").forEach((b) => b.setAttribute("aria-pressed", String(b === se)));
+      drawYearChart();
       return;
     }
-    const t = e.target.closest(".cl-tile.photo");
+    const bar = e.target.closest(".st-bar[data-y]");
+    if (bar) {
+      claimsView.querySelectorAll(".st-bar.sel").forEach((b) => b.classList.remove("sel"));
+      bar.classList.add("sel");
+      const ro = document.getElementById("stReadout");
+      ro.firstChild.textContent = `${bar.dataset.y}: ${bar.dataset.v} reported (${claimsSeries === "world" ? "worldwide" : "England"}).`;
+      return;
+    }
+    const t = e.target.closest(".st-photo");
     if (t) {
       const item = allData.find((d) => d.id === t.dataset.id);
       if (item) openDetail(item);

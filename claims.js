@@ -65,6 +65,54 @@
   const CLAIMS = {
     lede: "People who said they made crop circles — and the counterpoints researchers raise. Every line names who said it; this app doesn’t decide how any formation was made.",
 
+    story: {
+      intro: "Some people say they made crop circles. Six short steps: what they said, and what others say back. This app doesn’t decide who is right.",
+      ch1: {
+        head: "Who says they made them",
+        take: "Two groups have said publicly that they make crop circles.",
+        people: [
+          { name: "Doug Bower & Dave Chorley", line: "Told Today in 1991 they had made circles since the late 1970s with a plank, rope and a cap.", src: ["today91"] },
+          { name: "Circlemakers", line: "UK art group that makes formations for adverts and TV, and publishes how long each took.", src: ["cmWork"] }
+        ]
+      },
+      ch2: {
+        head: "Simple then, complex now",
+        take: "Doug & Dave described a plain swirled ring. Milk Hill (2001) had 409 circles; no one has claimed it.",
+        ring: { title: "Doug & Dave’s ring", quote: "“A large corn circle with the wheat laid down in a clockwise swirling motion…”", src: ["today91"] },
+        photoId: "2001-08-12-milk-hill-galaxy-spiral",
+        photoTitle: "Milk Hill, 2001",
+        photoLine: "409 circles, about 900 ft across",
+        photoSrc: ["ccc01"]
+      },
+      ch3: {
+        head: "Up close: bent or broken?",
+        take: "BLT Research says stalks in some formations are bent and stretched at the nodes — the knuckle-like joints on a stalk. Critics say a plank can do the same.",
+        img: "img/anomalies/blt_node_italy.jpg",
+        caption: "Elongated node from a formation sample, as presented by BLT Research",
+        missing: "We found no licensed close-up of the flattened crop in a claimed man-made formation."
+      },
+      ch4: {
+        head: "How long did it take?",
+        take: "Paid builds, as the makers report them, took up to three days — often in daylight, with permission. Milk Hill was reported to have appeared in one short night.",
+        statA: { big: "Up to 3 days", small: "Paid builds, often in daylight", src: ["lego24", "ansty16", "cmKorn", "cmMits"] },
+        statB: { big: "≈ 4 h", small: "Full darkness the night Milk Hill was reported", src: ["tadSwindon"] },
+        topIds: ["LEGO Australia", "Mothership Glass (reported)", "Korn (rock band)", "Weetabix", "Shredded Wheat"]
+      },
+      ch5: {
+        head: "Mistakes?",
+        take: "Some observers say the big formations are flawless. Others point to visible errors.",
+        none: [{ q: "“The tenth digit has even been correctly rounded up.”", who: "Mike Reed, astrophysicist, on Barbury Castle 2008", src: ["mail08"] }],
+        some: [
+          { q: "“…a number of obvious errors in the construction”", who: "Paul Vigay, on Allington 2000", src: ["vigay00"] },
+          { q: "“…quite well made - though there is evidence of sloppiness”", who: "John Vidal, on Milk Hill 2001", src: ["vidal"] }
+        ]
+      },
+      ch6: {
+        head: "How many each year?",
+        take: "In these counts, reports rose fast in the late 1980s, peaked in the 1990s, and are now a few dozen a year."
+      }
+    },
+
     plain: {
       lede: "Some people say they made crop circles. Here is what they said, what others say back, and where to check. This app doesn’t decide who is right.",
       heads: { who: "Who says they made them?", compare: "Simple circles vs complex designs", time: "How long did it take?", mistakes: "Where are the mistakes?" },
