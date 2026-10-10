@@ -366,11 +366,11 @@
     const c5 = ST.ch5;
     const quote = (q) => `<blockquote class="st-q"><p>${esc(q.q)}</p><cite>${esc(q.who)}</cite></blockquote>`;
     const v5 = `<div class="st-pair">
-        <div class="st-half"><span class="st-tag n">No errors</span>${c5.none.map(quote).join("")}</div>
+        <div class="st-half"><span class="st-tag n">Praised as precise</span>${c5.none.map(quote).join("")}</div>
         <div class="st-half"><span class="st-tag n">Errors found</span>${c5.some.map(quote).join("")}</div>
       </div>`;
     const nE = [0, 1, 3].map((i) => C.mistakes.noErrors[i]), yE = [1, 3].map((i) => C.mistakes.errors[i]);
-    const m5 = sub("“No errors” — more", pointList(nE)) + sub("Errors — more", pointList(yE, "counter"));
+    const m5 = sub("Precision — more", pointList(nE)) + sub("Errors — more", pointList(yE, "counter"));
     const k5 = c5.none.concat(c5.some).flatMap((q) => q.src).concat(keysOf(nE), keysOf(yE));
 
     /* 6 */

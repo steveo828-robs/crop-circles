@@ -100,7 +100,7 @@
       },
       ch5: {
         head: "Mistakes?",
-        take: "Some observers say the big formations are flawless. Others point to visible errors.",
+        take: "Some observers praise how precise the big formations are. Others point to visible errors.",
         none: [{ q: "“The tenth digit has even been correctly rounded up.”", who: "Mike Reed, astrophysicist, on Barbury Castle 2008", src: ["mail08"] }],
         some: [
           { q: "“…a number of obvious errors in the construction”", who: "Paul Vigay, on Allington 2000", src: ["vigay00"] },
