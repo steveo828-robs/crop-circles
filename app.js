@@ -314,6 +314,71 @@
       </div>`;
     }).join("");
 
+    const T = C.timing;
+    const buildRows = T.builds.map((b) => `
+      <li class="cl-build${/day/i.test(b.time) && !/window|under/i.test(b.time) ? " multi" : ""}">
+        <div class="cl-build-top"><b>${esc(b.name)}</b><span class="cl-build-time">${esc(b.time)}</span></div>
+        <p class="cl-build-meta">${esc(b.year)} · ${esc(b.where)} · team: ${esc(b.team)} · ${esc(b.light)} · size: ${esc(b.size)}</p>
+        <p class="cl-build-note">${esc(b.note)}</p>
+        <p class="cl-src">${srcLinks(b.src)}</p>
+      </li>`).join("");
+
+    const BY = C.byYear;
+    let byYear = "";
+    if (BY) {
+      const years = new Set();
+      BY.series.forEach((sr) => Object.keys(sr.data).forEach((y) => years.add(+y)));
+      const ys = [...years].sort((a, b) => a - b);
+      const max = Math.max(...BY.series.flatMap((sr) => Object.values(sr.data)));
+      const ours = {};
+      allData.forEach((d) => { if (d.year) ours[d.year] = (ours[d.year] || 0) + 1; });
+      const bars = ys.map((y) => `<li><span class="by-y">${y}</span><span class="by-bars">${BY.series.map((sr) => {
+          const v = sr.data[y];
+          return v == null ? `<span class="by-row ${sr.key} gap"><em>\u2014</em></span>`
+            : `<span class="by-row ${sr.key}"><i style="width:${Math.max(1.5, (v / max) * 85).toFixed(1)}%"></i><em>${v}</em></span>`;
+        }).join("")}</span><span class="by-ours">${ours[y] || ""}</span></li>`).join("");
+      byYear = `<article class="cl-card" id="cl-years">
+        <h4>How many were found each year?</h4>
+        <p class="cl-sub">${esc(BY.intro)}</p>
+        <div class="by-legend">${BY.series.map((sr) => `<span class="${sr.key}"><i></i><span>${esc(sr.label)}<br><span class="cl-src">${srcLinks(sr.src)}</span></span></span>`).join("")}<span class="ours"><b>#</b> In this gallery</span></div>
+        <ul class="by-chart">${bars}</ul>
+        <p class="cl-note">${esc(BY.chartNote)}</p>
+        <p class="cl-label">Other published totals</p>
+        ${pointList(BY.points)}
+      </article>`;
+    }
+
+    const G = C.gallery;
+    const gal = G ? G.items.map((g) => `
+      <div class="cl-gtile">
+        ${g.img ? `<img src="${esc(g.img)}" alt="${esc(g.imgAlt || g.title)}" loading="lazy" /><span class="cl-gkind">${esc(g.imgKind || "")}</span>`
+                : `<a class="cl-gph" href="${esc(g.link)}" target="_blank" rel="noopener"><span>No licensed photo</span><b>${esc(g.linkLabel)} ↗</b></a>`}
+        <span class="cl-tile-t">${esc(g.title)}</span>
+        <span class="cl-tile-d">${esc(g.date)} · ${esc(g.where)}</span>
+        <span class="cl-tile-d">Claimed by: ${esc(g.who)}</span>
+        <span class="cl-src">${srcLinks(g.src)}${g.imgCredit ? " · " + srcLinks(g.imgCredit) : ""}</span>
+      </div>`).join("") : "";
+
+    const LY = C.lay;
+    const lay = LY ? `
+      <article class="cl-card">
+        <h4>Up close: the lay</h4>
+        <p class="cl-sub">${esc(LY.intro)}</p>
+        <div class="cl-lay">
+          <div class="cl-lay-col claimed">
+            <p class="cl-label">Claimed man-made</p>
+            <p class="cl-note">${esc(LY.claimedNote)}</p>
+            ${pointList(LY.claimed, "counter")}
+          </div>
+          <div class="cl-lay-col reported">
+            <p class="cl-label">Presented as unexplained</p>
+            ${LY.reported.map((r) => `<figure class="cl-fig"><img src="${esc(r.img)}" alt="${esc(r.text)}" loading="lazy" />
+              <figcaption><b>${esc(r.label)}:</b> ${esc(r.text)} <span class="cl-src">${srcLinks(r.src)}</span></figcaption></figure>`).join("")}
+          </div>
+        </div>
+        ${LY.counterNote ? `<p class="cl-label">Published counterpoint</p>${pointList([LY.counterNote], "counter")}` : ""}
+      </article>` : "";
+
     const rows = C.timing.rows.map((r) => `
       <article class="cl-time">
         <h4>${esc(r.name)}</h4>
@@ -325,7 +390,12 @@
       </article>`).join("");
 
     claimsBody.innerHTML = `
-      <section class="cl-sec" id="cl-who"><h3>1 \u00b7 Who claimed</h3>${who}</section>
+      <section class="cl-sec" id="cl-who"><h3>1 \u00b7 Who claimed</h3>${who}
+        ${byYear}
+        ${G ? `<article class="cl-card"><h4>Claimed man-made formations</h4><p class="cl-sub">${esc(G.intro)}</p>
+          <div class="cl-gallery">${gal}</div>
+          <p class="cl-note">${esc(G.noPhotoNote)}</p></article>` : ""}
+      </section>
 
       <section class="cl-sec" id="cl-compare"><h3>2 \u00b7 Simple vs complex</h3>
         <div class="cl-tiles">${tiles}</div>
@@ -336,15 +406,28 @@
           <p class="cl-label">Published counterpoints</p>
           ${pointList(C.compare.plantCounter, "counter")}
         </article>
+        ${lay}
       </section>
 
       <section class="cl-sec" id="cl-time"><h3>3 \u00b7 Time vs window</h3>
-        ${rows}
-        <article class="cl-card">
-          <h4>How long did claimed builds take?</h4>
-          ${pointList(C.timing.benchmarks)}
-          <p class="cl-note">${esc(C.timing.note)}</p>
+        <article class="cl-card cl-lead">
+          <h4>${esc(T.lead.title)}</h4>
+          <p>${esc(T.lead.text)}</p>
+          <p class="cl-src">${srcLinks(T.lead.src)}</p>
+          <div class="cl-vs">
+            <a href="#cl-builds" data-jump="cl-builds"><b>Commissioned builds</b><span>as reported by the makers · ${T.builds.length}</span></a>
+            <a href="#cl-windows" data-jump="cl-windows"><b>Overnight windows</b><span>complex unclaimed formations · ${T.rows.length}</span></a>
+          </div>
         </article>
+        <article class="cl-card" id="cl-builds">
+          <h4>Commissioned builds (as reported by the makers)</h4>
+          <p class="cl-sub">Longest first. Quotes are the makers’ or the named source’s own words.</p>
+          <ul class="cl-builds">${buildRows}</ul>
+          <p class="cl-note">${esc(T.note)}</p>
+        </article>
+        <div id="cl-windows" class="cl-anchor"></div>
+        <p class="cl-label cl-label-big">Reported overnight windows</p>
+        ${rows}
       </section>
 
       <section class="cl-sec" id="cl-mistakes"><h3>4 \u00b7 Where are the mistakes?</h3>
@@ -458,6 +541,7 @@
   claimsView.addEventListener("click", (e) => {
     const j = e.target.closest("[data-jump]");
     if (j) {
+      e.preventDefault();
       const el = document.getElementById(j.dataset.jump);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       return;

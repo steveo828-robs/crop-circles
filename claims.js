@@ -34,7 +34,32 @@
     plus08: ["Plus magazine, 1 Jul 2008", "https://plus.maths.org/pi-appears-crop-circle"],
     mail08: ["Daily Mail, 17 Jun 2008", "https://www.dailymail.com/news/article-1027178/Easy-pi-Astrophysicist-solves-riddle-Britains-complex-crop-circle.html"],
     vigay00: ["Paul Vigay, field report, Aug 2000", "http://www.vigay.com/cropcircles/articles/uk2000dg.html"],
-    enigma21: ["Enigma #21 newsletter (Paul Vigay)", "https://thecroppie.com/wp-content/uploads/2019/08/enigma21.pdf"]
+    enigma21: ["Enigma #21 newsletter (Paul Vigay)", "https://thecroppie.com/wp-content/uploads/2019/08/enigma21.pdf"],
+    cmNews1: ["circlemakers.org news 2002–03", "https://www.circlemakers.org/new_documents1.html"],
+    cmKorn: ["circlemakers.org — Korn", "https://www.circlemakers.org/korn_circle.html"],
+    cmMits: ["circlemakers.org — Mitsubishi", "https://www.circlemakers.org/mits.html"],
+    cmShredded: ["circlemakers.org — Shredded Wheat", "https://www.circlemakers.org/shredded_wheat.html"],
+    cmDew: ["circlemakers.org — Mountain Dew", "https://www.circlemakers.org/mountaindew.html"],
+    cmOlyFr: ["circlemakers.org — The Sun, France", "https://www.circlemakers.org/olympics_france.html"],
+    cmOly: ["circlemakers.org — The Sun, Cherhill", "https://www.circlemakers.org/olympics.html"],
+    cmBB: ["circlemakers.org — Big Brother 4", "https://www.circlemakers.org/bigbrother.html"],
+    cmGreenpeace: ["circlemakers.org — Greenpeace", "https://www.circlemakers.org/greenpeace.html"],
+    cmLevellers: ["circlemakers.org — The Levellers", "https://www.circlemakers.org/levellers.html"],
+    cmHTV: ["circlemakers.org — HTV", "https://www.circlemakers.org/htv.html"],
+    cmNZ: ["circlemakers.org — NBC, New Zealand", "https://www.circlemakers.org/nztrip.html"],
+    cmHistory: ["circlemakers.org — History Channel", "https://www.circlemakers.org/making_history.html"],
+    cmBeeb: ["circlemakers.org — BBC Country File with Doug Bower", "https://www.circlemakers.org/beeb.html"],
+    cmTotc01: ["circlemakers.org — Top of the Crops 2001", "https://www.circlemakers.org/totc2001.html"],
+    lego24: ["Mediaweek, 23 Jul 2024", "https://mediaweek.vinyl.media/lego-australia-launches-space-range-with-a-crop-circle"],
+    ansty16: ["The Croppie, ‘Anstygate’, 17 Aug 2016 (quoting Colin Andrews)", "https://thecroppie.com/2016/08/17/anstygate/"],
+    fi18: ["franceinfo / France 3, 20 Sep 2018", "https://www.franceinfo.fr/internet/youtube/crop-circle-un-canular-devoile-en-moselle_2949519.html"],
+    rl18: ["Le Républicain Lorrain, 24 Aug 2018", "https://www.republicain-lorrain.fr/edition-de-sarrebourg-chateau-salins/2018/08/24/le-crop-circle-etait-l-oeuvre-d-une-bande-de-youtubeurs"],
+    commonsSarr: ["Diagram: Wizly-08, CC BY-SA 4.0, Wikimedia Commons", "https://commons.wikimedia.org/wiki/File:Agroglyphe_de_Sarraltroff.jpg"],
+    cccenter: ["Crop Circle Center database — yearly statistics", "https://www.cropcirclecenter.com/"],
+    dallaglio: ["Claudio Dall’Aglio chart, via Crop Circle Connector archives", "https://www.cropcirclearchives.co.uk/archives/ccarchives.htm"],
+    si92: ["Nickell & Fischer, Skeptical Inquirer vol. 16 (1992)", "https://cdn.centerforinquiry.org/wp-content/uploads/sites/29/1992/01/22165201/p39.pdf"],
+    vigayDist: ["Paul Vigay, ‘Crop Circle Distribution Patterns’", "http://www.vigay.com/cropcircles/articles/distribution.html"],
+    bbc21: ["BBC Travel, 22 Aug 2021", "https://www.bbc.com/travel/article/20210822-englands-crop-circle-controversy"]
   };
 
   const CLAIMS = {
@@ -76,8 +101,8 @@
         title: "Other documented claims",
         sub: "Brief",
         points: [
-          ["1992 crop-circle-making competition, West Wycombe: 12 teams had 10 pm–3 am to make a set design; 11 followed it; three Westland Helicopters engineers won £3,000. Doug & Dave declined to enter.", "sheldrake"],
-          ["Julia Set, Stonehenge 1996: Rod Dickinson told researcher Michael Lindemann it “was made the previous night, by three people, in about two and three-quarters hours”.", "si22"],
+          ["1992 crop-circle-making competition, West Wycombe (11 July): 12 teams had 10 pm–3 am in darkness to make a set design; Sheldrake writes 11 “made more or less impressive formations that followed the set design”; three Westland Helicopters engineers won £3,000. Doug & Dave declined to enter.", "sheldrake"],
+          ["Julia Set, Stonehenge 1996: Rod Dickinson told researcher Michael Lindemann it “was made the previous night, by three people, in about two and three-quarters hours”. The makers were not named; Radford says Dickinson “confessed to making it—or at least knowing who did”.", "si22"],
           ["BBC News (2000), on Colin Andrews’ view: about 20% are caused by eddies in the earth’s magnetic field — “the rest are man-made”.", "bbc2000"]
         ],
         counter: []
@@ -105,18 +130,46 @@
     },
 
     timing: {
+      lead: {
+        title: "Paid builds: hours to days. Overnight windows: a few hours.",
+        text: "Makers’ own write-ups of commissioned formations report builds of up to two days (Korn, 2010: “two stages over two days”), 16 hours spread “over several days” (Weetabix, 2002) and 12–14 hours in one day (Mitsubishi 1998, Shredded Wheat 2006). Two later commissions were reported at three days — by the client’s PR agency (LEGO, 2024) and by researcher Colin Andrews (Ansty, 2016). These were done with the landowner’s permission, several in daylight.",
+        src: ["cmKorn", "cmWeetabix", "cmMits", "cmShredded", "lego24", "ansty16"]
+      },
+      builds: [
+        { name: "LEGO Australia", where: "Narromine, NSW", year: "2024", size: "50 m", team: "“teams” (not counted)", time: "“three full days”", light: "Not stated", note: "Quote from Clare Basire of Thrive PR, the agency behind the stunt; makers not named.", src: ["lego24"] },
+        { name: "Mothership Glass (reported)", where: "Ansty", year: "2016", size: "Not stated", team: "Not named", time: "Three days", light: "Not stated", note: "Colin Andrews’ investigation: a paid commission made in three days with the field owners’ agreement. Not a maker’s own statement.", src: ["ansty16"] },
+        { name: "Korn (rock band)", where: "Bakersfield, California", year: "2010", size: "700 × 230 ft", team: "4", time: "“two stages over two days”", light: "Not stated", note: "Mature wheat.", src: ["cmKorn", "cmNews"] },
+        { name: "Mountain Dew (Pepsi) advert", where: "Washington State", year: "2000", size: "Not stated", team: "3", time: "“two leisurely days”", light: "Not stated", note: "Mowed into short grass, not crop.", src: ["cmDew"] },
+        { name: "Weetabix", where: "West Kennet Long Barrow, Wiltshire", year: "2002", size: "300 × 400 ft", team: "3", time: "16 h total, “over several days”", light: "Not stated", note: "“The most complex formation we’ve ever been asked to create”; built from nine diagrams.", src: ["cmWeetabix", "cmNews1"] },
+        { name: "Shredded Wheat", where: "Puckeridge, Hertfordshire", year: "2006", size: "Not stated", team: "4", time: "14 h", light: "From “a very early start”", note: "Lettering left standing in wheat; 18 diagrams.", src: ["cmShredded", "cmNews"] },
+        { name: "Mitsubishi ‘Space Star’ advert", where: "East Field, Alton Barnes, Wiltshire", year: "1998", size: "350 × 110 ft", team: "3", time: "12 h", light: "Daylight", note: "“Uncharacteristically the formation was made during daylight”; security kept visitors out.", src: ["cmMits"] },
+        { name: "The Sun — London 2012 bid", where: "Campigneulles-les-Grandes, France", year: "2005", size: "205 ft", team: "6", time: "About 7 h", light: "Daylight", note: "Started at dawn, “back in London before sunset”.", src: ["cmOlyFr"] },
+        { name: "The Sun — Olympic rings", where: "Cherhill, Wiltshire", year: "2005", size: "200 ft", team: "4", time: "“a sedate 5 hours”", light: "Not stated", note: "Barley; diagrams drawn the day before.", src: ["cmOly", "cmNews"] },
+        { name: "Big Brother 4 (Channel 4)", where: "Southern England (secret)", year: "2003", size: "220 ft", team: "6", time: "5 h", light: "Not stated", note: "Oilseed rape. The other three BB4 logos were paint, stone or sand.", src: ["cmBB"] },
+        { name: "National Geographic TV", where: "Opposite Silbury Hill, Wiltshire", year: "2004", size: "200 ft", team: "3", time: "“a very sedate 5 hours”", light: "Daylight, filmed", note: "Their own square-spiral design, “with lots of breaks in construction for filming”.", src: ["cmNatGeo04"] },
+        { name: "Greenpeace", where: "Ayotzintepec, Oaxaca, Mexico", year: "2006", size: "200 ft", team: "4", time: "4½ h", light: "Not stated", note: "Question mark and ring in 8 ft maize.", src: ["cmGreenpeace", "cmNews"] },
+        { name: "The Levellers video", where: "Poynings, West Sussex", year: "2002", size: "About 200 ft", team: "3 + band", time: "About 4 h", light: "Daylight", note: "The band flattened much of it under instruction, on camera.", src: ["cmLevellers"] },
+        { name: "History Channel logo", where: "Wiltshire", year: "2002", size: "140 ft", team: "3", time: "“a couple of hours”", light: "Daylight", note: "“Created at a very sedate pace in daylight”.", src: ["cmHistory", "cmNews1"] },
+        { name: "HTV West documentary", where: "Beckhampton, Wiltshire", year: "2001", size: "240 ft", team: "3", time: "About 4 h", light: "Darkness", note: "178 standing and flattened elements, eight-fold geometry.", src: ["cmHTV"] },
+        { name: "National Geographic TV", where: "Not stated", year: "2009", size: "Not stated", team: "Not stated", time: "“a 4 hour window”", light: "Darkness", note: "Design by a University College London mathematician, sent to them as a diagram beforehand. Actual build time not given.", src: ["cmNews"] },
+        { name: "NBC ‘Secrets of Deception’", where: "Southern New Zealand", year: "1998", size: "300 ft, 100+ circles", team: "3", time: "Designed to be made in “under four hours”", light: "Night", note: "The page gives the design target, not a measured build time.", src: ["cmNZ"] },
+        { name: "YouTubers’ test (AstronoGeek, Defakator & others)", where: "Sarraltroff, Moselle, France", year: "2018", size: "Not stated", team: "A group", time: "“en moins de deux heures” (under 2 h)", light: "Night", note: "Planks and ropes; farmer’s permission (France 3).", src: ["fi18", "rl18"] },
+        { name: "1992 making competition", where: "West Wycombe, Buckinghamshire", year: "1992", size: "Set design", team: "12 teams (winners: 3)", time: "Up to 5 h, 10 pm–3 am", light: "Darkness", note: "Sheldrake’s text says the design was sent three weeks ahead; his photo caption says 24 hours. Plots were marked out by the organisers. 11 of 12 teams followed the design.", src: ["sheldrake"] }
+      ],
       rows: [
         {
           name: "Julia Set, near Stonehenge",
           date: "7 July 1996 · 149 circles (Colin Andrews)",
-          build: [["3 people, about 2¾ hours, starting around 2:45 am — Rod Dickinson, as told to Michael Lindemann.", "si22"]],
+          build: [["3 people, about 2¾ hours, starting around 2:45 am — Rod Dickinson, as told to Michael Lindemann. The makers were not named.", "si22"],
+                  ["Taken at face value, that would end around 5:30 am — after that day’s 5:01 am sunrise.", "si22", "tadSalisbury"]],
           window: [["Not there at 5:30 pm, seen at 6:15 pm: “this pattern did appear during a 45 minute period, in full daylight” — Colin Andrews.", "andrewsJulia"],
                    ["That night: sunset 9:22 pm, sunrise 5:01 am; nautical darkness 11:15 pm–3:08 am (3 h 53 m). It never reached full astronomical darkness.", "tadSalisbury"]]
         },
         {
           name: "Milk Hill ‘Galaxy’",
           date: "Night of 11–12 Aug 2001 · 409 circles",
-          build: [["About 6 people, about 5 hours — an estimate by John Vidal (not a maker’s claim).", "vidal"]],
+          build: [["About 6 people, about 5 hours — an estimate by John Vidal (not a maker’s claim).", "vidal"],
+                  ["Unclaimed. Circlemakers wrote that, allowing time to get in and out in darkness, “the construction time left should be around four hours” — one circle “every 30 seconds… not even allowing any time for the surveying”.", "cmTotc01"]],
           window: [["Heavy rain that night; “no evidence of any mud on the stems on the formations first morning” — Stuart Dike.", "ccc01"],
                    ["John Hunt camped on Milk Hill that evening: “I do not believe that the large formation was there” — though he “would not like to swear” to it.", "ccc01"],
                    ["Sunset 8:37 pm → sunrise 5:47 am (9 h 10 m). Civil darkness 9:15 pm–5:09 am (7 h 54 m). Full night 11:06 pm–3:18 am (4 h 12 m). Swindon figures, about 20 km away.", "tadSwindon"]]
@@ -128,14 +181,59 @@
           window: [["Rain the night before, but no mud inside the formation — Lucy Pringle.", "plus08"]]
         }
       ],
-      benchmarks: [
-        ["Weetabix, West Kennett Long Barrow 2002 (300 × 400 ft): “made over several days and took a total of 16 hours”.", "cmWeetabix"],
-        ["National Geographic demo 2004 (200 ft square spiral, daylight): 3 people, “a very sedate 5 hours… with lots of breaks”.", "cmNatGeo04"],
-        ["National Geographic 2009: a mathematician’s design reproduced “under cover of darkness in a 4 hour window”.", "cmNews"],
-        ["o2, Blackpool beach 2003 (300 ft, sand): six people in about 6 hours.", "cmO2"],
-        ["1992 competition: a 5-hour dark window (10 pm–3 am); 11 of 12 teams finished the set design.", "sheldrake"]
+      note: "Commissioned builds were done with permission, often in daylight or over more than one session, with the design drawn up in advance — so the makers did not have to stay hidden or finish in one night. Times are as the makers or the named source reported them; “Not stated” means the source doesn’t say."
+    },
+
+    byYear: {
+      intro: "How many were reported each year, from different counts. They disagree because they count different things (whole formations vs individual circles) and different areas. A dash means no sourced figure for that year.",
+      series: [
+        { key: "world", label: "Worldwide — formations in the Crop Circle Center database", scope: "Worldwide", src: ["cccenter"], data: {"1980": 20, "1981": 15, "1982": 15, "1983": 16, "1984": 17, "1985": 23, "1986": 25, "1987": 67, "1988": 56, "1989": 152, "1990": 286, "1991": 286, "1992": 354, "1993": 231, "1994": 297, "1995": 244, "1996": 328, "1997": 262, "1998": 287, "1999": 280, "2000": 292, "2001": 225, "2002": 264, "2003": 277, "2004": 240, "2005": 227, "2006": 184, "2007": 172, "2008": 178, "2009": 156, "2010": 145, "2011": 128, "2012": 139, "2013": 103, "2014": 108, "2015": 88, "2016": 69, "2017": 59, "2018": 64, "2019": 60, "2020": 57, "2021": 31, "2022": 20, "2023": 31, "2024": 17, "2025": 19} },
+        { key: "england", label: "England — formations, Claudio Dall’Aglio chart (read from the chart image)", scope: "England only", src: ["dallaglio"], data: {"1978": 1, "1980": 1, "1981": 2, "1982": 2, "1983": 1, "1984": 2, "1985": 3, "1986": 6, "1987": 21, "1988": 110, "1989": 120, "1990": 81, "1991": 70, "1992": 62, "1993": 29, "1994": 70, "1995": 70, "1996": 89, "1997": 93, "1998": 99, "1999": 144, "2000": 124, "2001": 95, "2002": 71, "2003": 73, "2004": 58, "2005": 70} }
       ],
-      note: "These were commissioned or staged builds; several were done in daylight or over several days, so the makers did not have to stay hidden."
+      points: [
+        ["1980–83: 3, 3, 5 and 22 circles in British cornfields; 1987–89: 73, 113 and “over 250” — Terence Meaden’s figures, as cited by Nickell & Fischer. These count individual circles in Britain.", "si92"],
+        ["1990: “700 circles in Britain” — Jenny Randles, as cited by Nickell & Fischer.", "si92"],
+        ["1991: “By 1991 the annual count was about 800” — Rupert Sheldrake (scope not stated; he says the great majority were in England).", "sheldrake"],
+        ["UK: 204 reported formations in 1992; a peak of 148 in 1999; “around the 100 per year mark” for 1996–2003 — Paul Vigay.", "vigayDist"],
+        ["UK recently: “an average of 30 crop circles appear each year in the UK, around 80% of them in Wiltshire” — BBC Travel, 2021.", "bbc21"],
+        ["For scale: Doug & Dave said they made as many as 25 to 30 a season (Time, 1991).", "time91"]
+      ],
+      chartNote: "The Dall’Aglio chart also shows Wiltshire and rest-of-world bars; some of those labels overlap, so they are not copied here. The Crop Circle Center count for 2026 is still open and is not shown. The right-hand number is how many of each year are in this app’s gallery."
+    },
+
+    gallery: {
+      intro: "Formations that named people or groups said they made. Each tile says who claimed it and links to where their photos are. Only openly licensed images are shown in the app; the rest link out.",
+      noPhotoNote: "No openly licensed photos of the 1992 competition entries could be found. An aerial photo of the entries by John Macnish appears on Rupert Sheldrake’s essay page (first tile); it isn’t licensed for reuse here, so it is linked, not shown. The same applies to the Circlemakers’ own photos of their commissions.",
+      items: [
+        { title: "1992 making competition entries", date: "11–12 July 1992", where: "West Wycombe, Buckinghamshire", who: "12 competing teams; winners three Westland Helicopters engineers — Rupert Sheldrake (organiser)", src: ["sheldrake"], link: "https://www.sheldrake.org/essays/the-crop-circle-making-competition", linkLabel: "Aerial photo (John Macnish) — Sheldrake’s page" },
+        { title: "Doug & Dave demonstrations", date: "1991", where: "Sevenoaks, Kent (Today demo)", who: "Doug Bower & Dave Chorley, for Today", src: ["today91"], link: "https://www.smithsonianmag.com/arts-culture/crop-circles-the-art-of-the-hoax-2524283/", linkLabel: "Photos (Rob Irving) — Smithsonian" },
+        { title: "BBC Country File demo, with Doug Bower", date: "25 July (aired Jan 1999)", where: "Not stated", who: "Lundberg, Dickinson, Russell & Doug Bower: about 200 ft, 100 circles, made at night", src: ["cmBeeb"], link: "https://www.circlemakers.org/beeb.html", linkLabel: "Photos — circlemakers.org" },
+        { title: "Mitsubishi ‘Space Star’ car", date: "August 1998", where: "East Field, Alton Barnes", who: "Circlemakers (3), daylight, 12 h", src: ["cmMits"], link: "https://www.circlemakers.org/mits.html", linkLabel: "Photos — circlemakers.org" },
+        { title: "HTV West formation", date: "Late July 2001", where: "Beckhampton, Wiltshire", who: "Circlemakers (3), darkness, about 4 h", src: ["cmHTV"], link: "https://www.circlemakers.org/htv.html", linkLabel: "Photos — circlemakers.org" },
+        { title: "Weetabix Energy", date: "July 2002", where: "West Kennet Long Barrow", who: "Circlemakers (3), 16 h over several days", src: ["cmWeetabix"], link: "https://www.circlemakers.org/withabix.html", linkLabel: "Photos — circlemakers.org" },
+        { title: "National Geographic square spiral", date: "August 2004", where: "Opposite Silbury Hill", who: "Circlemakers (3), daylight, 5 h", src: ["cmNatGeo04"], link: "https://www.circlemakers.org/natgeo.html", linkLabel: "Photos — circlemakers.org" },
+        { title: "Shredded Wheat logo", date: "2006", where: "Puckeridge, Hertfordshire", who: "Circlemakers (4), 14 h", src: ["cmShredded"], link: "https://www.circlemakers.org/shredded_wheat.html", linkLabel: "Photos — circlemakers.org" },
+        { title: "Korn crop circle", date: "2010", where: "Bakersfield, California", who: "Circlemakers (4), two days", src: ["cmKorn"], link: "https://www.circlemakers.org/korn_circle.html", linkLabel: "Photos — circlemakers.org" },
+        { title: "Sarraltroff test formation", date: "June 2018", where: "Sarraltroff, Moselle, France", who: "YouTubers AstronoGeek (Arnaud Thiry), Defakator and others — at night, under 2 h", src: ["fi18", "rl18"], img: "img/claimed/sarraltroff-2018.jpg", imgAlt: "Diagram of the Sarraltroff 2018 formation", imgCredit: ["commonsSarr"], imgKind: "Diagram, not a photo" },
+        { title: "LEGO Space", date: "2024", where: "Narromine, NSW, Australia", who: "Thrive PR / SoldOut Events — “three full days”", src: ["lego24"], link: "https://mediaweek.vinyl.media/lego-australia-launches-space-range-with-a-crop-circle", linkLabel: "Photos — Mediaweek" }
+      ]
+    },
+
+    lay: {
+      intro: "Close-ups of the flattened crop: first, formations people said they made; then plants that researchers presented as unexplained. Each item says who reported what.",
+      claimedNote: "No openly licensed close-up photos of the lay inside a claimed formation could be found, so none are shown here. These pages describe or picture it:",
+      claimed: [
+        ["Levengood & Talbott made their own test circles “using a plank with ropes attached at the ends”; after 3 days nodes were about 10% longer (described in text, no close-ups reproduced here).", "lev99"],
+        ["ICCRA, Wisconsin 2005 — a formation ICCRA judged mechanically made (not a maker’s claim): their field report describes broken stalks, creases, serrated edges and footprints.", "iccra"],
+        ["Circlemakers — their National Geographic 2004 page has photos of the finished square spiral and of a ‘stalk stomper’ used to make it.", "cmNatGeo04"],
+        ["Sarraltroff 2018 — France 3 reported that the YouTubers filmed themselves making it with planks and ropes (video, not hosted here).", "fi18"]
+      ],
+      reported: [
+        { img: "img/anomalies/blt_node_length.jpg", label: "Reported by BLT Research (W.C. Levengood)", text: "Wheat samples vs controls: “172% mean node length increase” at the node beneath the seed-head, as captioned by BLT.", src: ["blt"] },
+        { img: "img/anomalies/blt_node_italy.jpg", label: "Reported by BLT Research", text: "Presented by BLT as an elongated node from an Italian formation sample.", src: ["blt"] },
+        { img: "img/anomalies/blt_plantab2.jpg", label: "Reported by BLT Research", text: "One of the plant-abnormality photos on BLT’s page.", src: ["blt"] }
+      ],
+      counterNote: ["Grassi, Cocheo & Russo (CICAP) argue node elongation is what “we should expect when whatever kind of mechanical force flattens the plants, rope and wood plank included.”", "grassi"]
     },
 
     mistakes: {
