@@ -278,113 +278,333 @@
   let claimsSeries = "world";
   let slideIdx = 0;
   let slideCount = 0;
+  let slideMeta = [];
+  let slideDet = [];
+
+  const PF = { y: "Proof shown", p: "Partial proof", n: "No proof shown — claim only" };
+  function pfBadge(s, extra) { return `<span class="pf pf-${s}">${esc(PF[s])}${extra ? ` <em>${esc(extra)}</em>` : ""}</span>`; }
 
   function renderClaims() {
     if (claimsBody.dataset.ready) { sizeDeck(); return; }
     const C = window.CC_CLAIMS;
-    if (!C || !C.deck) { claimsBody.innerHTML = '<p class="map-off">Claims content unavailable.</p>'; return; }
-    const K = C.deck, T = C.timing;
+    if (!C || !C.deck || !C.proof) { claimsBody.innerHTML = '<p class="map-off">Claims content unavailable.</p>'; return; }
+    const K = C.deck, T = C.timing, D = C.claimants, G = C.gallery, CP = C.compare, LY = C.lay, BY = C.byYear, MI = C.mistakes;
     const SR = window.CC_SOURCES || {};
+    const uniq = (a) => [...new Set(a)].filter((k) => SR[k]);
+    const keysOf = (items) => items.flatMap(([, ...k]) => k);
+    const pr = (what) => C.proof.find((r) => r.what === what);
     const tag = (t) => t === "c" ? '<span class="sl-tag c">Claimed man-made</span>' : t === "u" ? '<span class="sl-tag u">Reported unexplained</span>' : t ? `<span class="sl-tag m">${esc(t)}</span>` : "";
-    const src = (keys) => {
-      const ks = [...new Set(keys)].filter((k) => SR[k]);
-      if (!ks.length) return "";
-      return `<p class="sl-src">Source: ${ks.map((k) => `<a href="${esc(SR[k][1])}" target="_blank" rel="noopener">${esc(SR[k][0])}</a>`).join(" \u00b7 ")}</p>`;
-    };
-    const slide = (cls, inner, foot) => `<section class="slide ${cls}" aria-roledescription="slide"><div class="sl-in">${inner}</div>${foot || ""}</section>`;
     const item = (id) => allData.find((d) => d.id === id);
     const photoBtn = (d, alt) => d ? `<button type="button" class="sl-photo" data-id="${esc(d.id)}" aria-label="Open ${esc(d.name)}"><img src="${esc(d.imageUrl)}" alt="${esc(alt || d.name)}" loading="lazy" /></button>` : "";
+    const ext = (url, alt, link, cls) => `<a class="sl-media ext${cls ? " " + cls : ""}" href="${esc(link)}" target="_blank" rel="noopener">
+        <span class="sl-fb"><b>Photo loads from source — needs signal</b><small>Tap to open the source page \u2197</small></span>
+        <img class="ext" src="${esc(url)}" alt="${esc(alt)}" loading="lazy" referrerpolicy="no-referrer" /></a>`;
+    const bul = (items) => `<ul class="sl-bul">${items.map((t) => `<li>${esc(Array.isArray(t) ? t[0] : t)}</li>`).join("")}</ul>`;
+    const detList = (items) => `<ul class="sd-list">${items.map(([t, ...k]) => `<li><p>${esc(t)}</p><p class="sd-src">${srcLinks(k)}</p></li>`).join("")}</ul>`;
+    const quote = (q, who) => `<blockquote class="sl-q"><p>${esc(q)}</p><cite>\u2014 ${esc(who)}</cite></blockquote>`;
+    const big = (b, sub) => `<div class="sl-big"><b>${esc(b)}</b><span>${esc(sub)}</span></div>`;
+    const vs = (a, b) => `<div class="sl-vs">
+        <div class="sl-stat ${a.c || "c"}"><b>${esc(a.big)}</b><span>${esc(a.small)}</span></div>
+        <div class="sl-stat ${b.c || "u"}"><b>${esc(b.big)}</b><span>${esc(b.small)}</span></div></div>`;
+    const line = (t) => `<p class="sl-line">${esc(t)}</p>`;
+    const note = (t) => `<p class="sl-note">${esc(t)}</p>`;
+
     const S = [];
+    let chap = "";
+    const chapters = [];
+    const add = (o) => {
+      if (o.ch && o.ch !== chap) { chap = o.ch; chapters.push({ name: chap, start: S.length }); }
+      const keys = uniq(o.src || []);
+      const detKeys = uniq((o.detKeys || []).concat(keys));
+      const detHtml = (o.det || "") + (detKeys.length ? `<h5 class="sd-h">Sources</h5><ul class="sd-srcs">${detKeys.map((k) => `<li>${srcLinks([k])}</li>`).join("")}</ul>` : "");
+      const i = S.length;
+      slideDet[i] = { title: o.head, html: detHtml };
+      const srcLine = keys.length ? `Source: ${keys.slice(0, 2).map((k) => srcLinks([k])).join(" \u00b7 ")}${keys.length > 2 ? ` +${keys.length - 2}` : ""}` : "";
+      const foot = (srcLine || detHtml) ? `<div class="sl-foot"><p class="sl-src">${srcLine}</p>${detHtml ? `<button type="button" class="sl-det" data-det="${i}">Details</button>` : ""}</div>` : "";
+      S.push(`<section class="slide ${o.cls || ""}" aria-roledescription="slide" aria-label="${esc(o.head)}"><div class="sl-in">${o.top || ""}<h3 class="sl-h">${esc(o.head)}</h3>${o.body || ""}</div>${foot}</section>`);
+      slideMeta[i] = chap;
+    };
 
-    /* 1 title */
-    S.push(slide("sl-title", `<div class="sl-ring big" aria-hidden="true"><span></span></div>
-      <h3 class="sl-h">${esc(K.title.head)}</h3><p class="sl-line">${esc(K.title.line)}</p>
-      <button type="button" class="sl-go" data-go="1">${esc(K.title.hint)}</button>`));
+    /* ——— Intro ——— */
+    add({ ch: "Start", cls: "sl-title", top: '<div class="sl-ring big" aria-hidden="true"><span></span></div>', head: K.title.head,
+      body: line("People who said they made crop circles, whether they showed proof, and what others say back. This app doesn’t decide who is right.") + `<button type="button" class="sl-go" data-go="1">${esc(K.title.hint)}</button>` });
+    add({ ch: "Start", head: "In this deck", body: `<div class="sl-toc" id="slToc"></div>` });
+    add({ ch: "Start", head: "How to read the badges",
+      body: `<ul class="sl-legend">
+        <li>${pfBadge("y")}<span>Someone other than the claimant saw, filmed, judged or documented it.</span></li>
+        <li>${pfBadge("p")}<span>Some proof, but of something smaller — e.g. a simple demo, not the formations claimed.</span></li>
+        <li>${pfBadge("n")}<span>They said it; no footage, witness or paperwork was published.</span></li>
+        <li><span class="sl-tag c">Claimed man-made</span><span>Someone said they made it.</span></li>
+        <li><span class="sl-tag u">Reported unexplained</span><span>Researchers presented it as unexplained.</span></li></ul>`,
+      det: `<p class="sd-p">${esc(C.proofIntro)}</p>` });
 
-    /* 2-3 claimants */
-    [K.doug, K.cm].forEach((d) => S.push(slide("", `${tag(d.tag)}<h3 class="sl-h">${esc(d.head)}</h3>
-      <div class="sl-big"><b>${esc(d.big)}</b><span>${esc(d.bigSub)}</span></div>
-      <p class="sl-line">${esc(d.line)}</p>`, src(d.src))));
+    /* ——— Doug & Dave ——— */
+    const dd = pr(C.proof[0].what);
+    add({ ch: "Doug & Dave", top: tag("c") + pfBadge("p"), head: "Doug & Dave", body: big("1978", "the year Bower said their first circle was made") +
+      line("Two men from Southampton went public in Today on 9 September 1991.") + note(dd.how),
+      src: ["today91", "time91"], det: detList(D[0].points) + `<h5 class="sd-h">The other side</h5>` + detList(D[0].counter) + `<h5 class="sd-h">Proof status</h5><p class="sd-p">${esc(dd.how)}</p>`, detKeys: dd.src });
+    add({ ch: "Doug & Dave", head: "What they said they used", body: bul([
+        "“4ft wooden plinths, with rope reins, a ball of string and an old baseball cap”",
+        "Wire threaded through the cap’s visor as a sighting loop",
+        "Bower: the first was made “with the iron bar I used to secure the back door of my shop… on our hands and knees”",
+        "Today says it questioned them for seven days at their homes"]),
+      src: ["today91"], det: detList(D[0].points.slice(0, 4)) });
+    const ch = pr("First circles, Cheesefoot Head ‘punchbowl’");
+    add({ ch: "Doug & Dave", top: pfBadge("n"), head: "When did they start?", body: vs({ big: "1978", small: "Bower, in Today (1991)" }, { big: "1976", small: "Smithsonian; Circlemakers (Longwood Estate, “about 30 feet across”)", c: "c" }) +
+      line("The Croppie notes the start date varies between accounts: 1975, 1976 or 1978.") + note("Early circles: their own account only. " + "No footage or outside witness cited."),
+      src: ["today91", "smithsonian", "cmNews", "croppie"], det: detList([D[0].points[1], D[0].points[2], D[0].counter[1]]) + `<h5 class="sd-h">Proof status</h5><p class="sd-p">${esc(ch.how)}</p>` });
+    add({ ch: "Doug & Dave", top: pfBadge("y", "demo only"), head: "The Delgado episode",
+      body: quote("“No human could have done this.”", "Pat Delgado, after inspecting their demo circle near Sevenoaks, Kent") +
+      line("Today journalists had watched the pair make it “step by step” hours earlier.") + note("A simple design they said they’d used “four or five times” that summer — not one of the complex formations."),
+      src: ["today91"], det: detList([D[0].points[5]]) + `<p class="sd-p">${esc(pr("Demonstration circle near Sevenoaks, Kent").how)}</p>` + detList([MI.errors[6]]) });
+    add({ ch: "Doug & Dave", head: "Their count vs the total", body: vs({ big: "25–30", small: "new circles a season, they said (Time, 1991)" }, { big: "≈ 800", small: "the annual count by 1991 (Rupert Sheldrake)", c: "n" }) +
+      quote("“…a maximum of 30 formations a year”", "Rupert Sheldrake, even if their claims were believed"),
+      src: ["time91", "sheldrake"], det: detList([D[0].points[4], D[0].counter[0]]) });
 
-    /* 4 simple vs complex */
+    /* ——— Circlemakers ——— */
+    add({ ch: "Circlemakers", top: tag("c") + pfBadge("y", "for named commissions"), head: "Circlemakers",
+      body: big("1995", "website started by John Lundberg, Rod Dickinson & Geoff Gilbertson") + line("Members named include John Lundberg, Rod Dickinson, Wil Russell and Rob Irving. They make formations for adverts, TV and bands."),
+      src: ["cmAbout", "cmWork"], det: detList(D[1].points) });
+    add({ ch: "Circlemakers", head: "Their tools", body: bul([
+        "Stalk-stompers, 4 ft and 6 ft",
+        "Pre-stretched nylon string and a 2 ft marking pole",
+        "100 ft surveying tape and an OS map",
+        "Optional: an infrared image intensifier"]) +
+      quote("“All we had were sketches, 100ft-long tape measures… and 4ft planks with a rope connecting each end.”", "John Vidal, The Guardian, watching a team of four at night"),
+      src: ["cmTools", "vidal"], det: detList([D[1].points[1], D[1].points[3]]) });
+    add({ ch: "Circlemakers", top: pfBadge("y"), head: "Paid work", body: bul([
+        "Adverts: Mitsubishi (1998), Mountain Dew (2000), Weetabix (2002), Nike Italy (2005)",
+        "TV: BBC Country File, HTV West, History Channel, National Geographic (2004, 2009), BBC’s QI",
+        "Campaigns: Greenpeace Mexico, The Sun’s Olympic rings, Tesco Mobile emojis (2015)",
+        "Music: The Levellers (2002), Korn (2010)"]) + note("The proof table covers the 15 with published build details."),
+      src: ["cmWork", "cmNews"], det: detList([D[1].points[2]]) + `<p class="sd-p">${esc(C.proofNote)}</p>` });
+    add({ ch: "Circlemakers", head: "What they don’t claim", body: quote("“…careful never to admit responsibility for any specific formation”", "John Vidal, The Guardian, on crop-circle makers") +
+      line("We found no formation in this gallery publicly claimed by the Circlemakers.") + note("Barbury Castle 2008: the Daily Mail reported “no one has claimed responsibility”."),
+      src: ["vidal", "mail08"], det: detList([D[1].points[4]]) + `<p class="sd-p">${esc(D[1].note)}</p>` });
+
+    /* ——— 1992 contest ——— */
+    const c92 = pr("1992 crop-circle-making competition entries");
+    add({ ch: "1992 contest", top: tag("c") + pfBadge("y"), head: "The 1992 contest", body: vs({ big: "12 teams", small: "one set design, plots marked out by the organisers" }, { big: "10 pm–3 am", small: "in darkness — up to 5 hours", c: "n" }) +
+      line("West Wycombe, 11 July 1992. Winners: three Westland Helicopters engineers, £3,000."),
+      src: ["sheldrake"], det: detList([D[2].points[0]]) + `<h5 class="sd-h">Proof status</h5><p class="sd-p">${esc(c92.how)}</p>` });
+    add({ ch: "1992 contest", head: "How it was run", body: bul([
+        "Plots marked out by the organisers, allocated at random",
+        "Invigilators with night-vision binoculars; points for not being seen",
+        "Five judges, plus aerial photos at dawn",
+        "The winners made it again in daylight, before the public and TV crews"]),
+      src: ["sheldrake"], det: `<p class="sd-p">${esc(c92.how)}</p>` });
+    const g92 = G.items[0];
+    add({ ch: "1992 contest", head: "What happened", body: bul([
+        "11 of 12 teams “made more or less impressive formations that followed the set design”",
+        "One team (Matt Ridley’s) made a question mark instead",
+        "Doug & Dave were invited, and declined",
+        "Design notice: the text says three weeks ahead; a photo caption says 24 hours"]) +
+      `<a class="sl-link" href="${esc(g92.link)}" target="_blank" rel="noopener">Aerial photo of the entries (John Macnish) \u2197</a>`,
+      src: ["sheldrake"], det: `<p class="sd-p">${esc(G.noPhotoNote)}</p>` + detList([D[2].points[0]]) + `<p class="sd-p">${esc(T.builds.find((b) => b.name === "1992 making competition").note)}</p>` });
+
+    /* ——— Other claims ——— */
+    const jl = pr("Julia Set, near Stonehenge");
+    add({ ch: "Other claims", top: tag("c") + pfBadge("n"), head: "Julia Set, 1996",
+      body: quote("“…made the previous night, by three people, in about two and three-quarters hours”", "Rod Dickinson, to researcher Michael Lindemann") +
+      line("The makers were not named.") + note("Radford: “there exists no photographs or video of it being made.”"),
+      src: ["si22"], det: detList([D[2].points[1]]) + `<h5 class="sd-h">Proof status</h5><p class="sd-p">${esc(jl.how)}</p>` });
+    const an = pr("Ansty — Mothership Glass commission");
+    add({ ch: "Other claims", top: tag("c") + pfBadge("n"), head: "Ansty, 2016", body: big("3 days", "reported build time, with the field owners’ agreement") +
+      line("Colin Andrews reported it was a paid commission for Mothership Glass.") + note("Andrews says the makers’ names are “known to me” — none published."),
+      src: ["ansty16"], det: `<p class="sd-p">${esc(an.how)}</p><p class="sd-p">${esc(T.builds.find((b) => b.name === "Mothership Glass (reported)").note)}</p>` });
+    add({ ch: "Other claims", top: tag("c") + pfBadge("y", "client on record"), head: "LEGO, 2024", body: big("3 days", "“three full days” — Clare Basire, Thrive PR") +
+      line("A 50 m design based on a LEGO Minifigure at Narromine, NSW, for LEGO’s space range."),
+      src: ["lego24"], det: `<p class="sd-p">${esc(pr("LEGO Space, Narromine NSW").how)}</p><p class="sd-p">${esc(T.builds.find((b) => b.name === "LEGO Australia").note)}</p>` });
+    const sar = G.items.find((g) => g.img);
+    add({ ch: "Other claims", top: tag("c") + pfBadge("y", "video"), head: "Sarraltroff, 2018",
+      body: `<div class="sl-media"><img src="${esc(sar.img)}" alt="${esc(sar.imgAlt)}" loading="lazy" /></div><p class="sl-credit">${esc(sar.imgKind)} \u00b7 Wizly-08, CC BY-SA 4.0</p>` +
+      line("French YouTubers made it at night in “under two hours” and posted video of it."),
+      src: ["fi18", "rl18", "commonsSarr"], det: `<p class="sd-p">${esc(sar.who)}</p><p class="sd-p">${esc(pr("Sarraltroff, Moselle test formation").how)}</p>` });
+    add({ ch: "Other claims", head: "A researcher’s estimate", body: big("80%", "man-made, in Colin Andrews’ view (BBC News, 2000)") +
+      line("He put about 20% down to eddies in the earth’s magnetic field."), src: ["bbc2000"], det: detList([D[2].points[2]]) });
+
+    /* ——— Claimed formations ——— */
+    const tile = (g) => {
+      const p = pr(g.proof);
+      return `<li class="sl-gt">${g.img ? `<img src="${esc(g.img)}" alt="${esc(g.imgAlt)}" loading="lazy" />` : ""}
+        <b>${esc(g.title)}</b><span>${esc(g.date)}</span>${p ? pfBadge(p.s) : ""}
+        ${g.link ? `<a href="${esc(g.link)}" target="_blank" rel="noopener">Photos \u2197</a>` : `<small>${esc(g.imgKind || "")}</small>`}</li>`;
+    };
+    const gi = G.items;
+    [[0, 4], [4, 8], [8, 11]].forEach(([a, b], k) => add({ ch: "Claimed formations", top: tag("c"), head: `Formations people said they made (${k + 1}/3)`, cls: "sl-gal",
+      body: `<ul class="sl-grid">${gi.slice(a, b).map(tile).join("")}</ul>` + (k === 2 ? note("No openly licensed photos of the 1992 entries or Circlemakers’ commissions — tiles link to them.") : ""),
+      src: gi.slice(a, b).flatMap((g) => g.src), det: `<ul class="sd-list">${gi.slice(a, b).map((g) => `<li><p><b>${esc(g.title)}</b> (${esc(g.date)}, ${esc(g.where)}) — ${esc(g.who)}</p><p class="sd-src">${srcLinks(g.src)}</p></li>`).join("")}</ul><p class="sd-p">${esc(G.noPhotoNote)}</p>` }));
+
+    /* ——— Simple vs complex ——— */
     const mh = item("2001-08-12-milk-hill-galaxy-spiral");
-    S.push(slide("", `<h3 class="sl-h">${esc(K.simple.head)}</h3>
-      <div class="sl-split">
+    add({ ch: "Simple vs complex", head: K.simple.head, body: `<div class="sl-split">
         <figure>${tag("c")}<div class="sl-tile"><div class="sl-ring" aria-hidden="true"><span></span></div></div><figcaption>Doug &amp; Dave’s ring</figcaption></figure>
-        <figure>${tag("u")}<div class="sl-tile">${photoBtn(mh, "Milk Hill 2001, aerial")}</div><figcaption>Milk Hill, 2001</figcaption></figure>
-      </div>
-      <p class="sl-line">${esc(K.simple.line)}</p>`, src(K.simple.src)));
+        <figure>${tag("u")}<div class="sl-tile">${photoBtn(mh, "Milk Hill 2001, aerial")}</div><figcaption>Milk Hill, 2001</figcaption></figure></div>` + line(K.simple.line),
+      src: K.simple.src, det: `<p class="sd-p">Doug &amp; Dave’s “hallmark”: ${esc(C.compare.tiles[0].text)}</p><p class="sd-p">${esc(C.compare.tiles[1].text)} Photo: ${esc(mh ? mh.photoCredit : "")}</p>` });
+    const bc = item("2008-06-01-barbury-castle-pi");
+    add({ ch: "Simple vs complex", top: tag("u"), head: "Barbury Castle π, 2008", body: `<div class="sl-media">${photoBtn(bc, "Barbury Castle 2008, aerial")}</div>` +
+      line("Pi to 10 digits in a 150 ft design. No one claimed it.") + note("Rain the night before, but no mud inside — Lucy Pringle."),
+      src: ["plus08", "mail08"], det: detList(T.rows[2].build.concat(T.rows[2].window)) + `<p class="sd-p">${esc(C.compare.tiles[2].text)}</p>` });
 
-    /* 5 nodes */
-    S.push(slide("", `${tag("u")}<h3 class="sl-h">${esc(K.nodes.head)}</h3>
-      <div class="sl-media"><img src="${esc(K.nodes.img)}" alt="${esc(K.nodes.alt)}" loading="lazy" /></div>
-      <p class="sl-line">${esc(K.nodes.line)}</p><p class="sl-note">${esc(K.nodes.note)}</p>`, src(K.nodes.src)));
+    /* ——— Up close ——— */
+    add({ ch: "Up close", top: tag("u"), head: K.nodes.head, body: `<div class="sl-media"><img src="${esc(K.nodes.img)}" alt="${esc(K.nodes.alt)}" loading="lazy" /></div>` + line(K.nodes.line) + note(K.nodes.note),
+      src: K.nodes.src, det: `<p class="sd-p">${esc(LY.reported[0].text)}</p>` });
+    add({ ch: "Up close", top: tag("u"), head: "What BLT Research reports", body: bul([
+        "Longer, bent nodes (usually 45–90°) and ‘expulsion cavities’ vs control plants",
+        "Their own plank-flattened test circles: nodes ~10% longer after 3 days — vs “30 to an over 200% increase” in formations",
+        "Expulsion cavities “never been observed in literally thousands of control plants”",
+        "Planks or feet on canola “will snap or break the plant stems” — not yet “scientifically evaluated”"]),
+      src: ["blt", "lev94", "lev99"], det: detList(CP.plants.slice(0, 4)) });
+    add({ ch: "Up close", head: "The other side", body: bul([
+        "Grassi, Cocheo & Russo (CICAP): longer nodes are what “we should expect when whatever kind of mechanical force flattens the plants, rope and wood plank included”",
+        "Joe Nickell: wheat is green and pliable mid-May to August, so pressed stalks need not break",
+        "ICCRA: a formation they judged mechanically made had broken stalks, creases — and no node elongation"]),
+      src: ["grassi", "csicop", "iccra"], det: detList(CP.plantCounter.concat([CP.plants[4]])) });
+    add({ ch: "Up close", head: "Side by side", body: `<div class="sl-split">
+        <figure>${tag("c")}<div class="sl-tile sl-empty"><span>No licensed close-up of a claimed formation’s crop found</span></div><figcaption>Claimed man-made</figcaption></figure>
+        <figure>${tag("u")}<div class="sl-tile"><img src="${esc(LY.reported[1].img)}" alt="Node length comparison, BLT Research" loading="lazy" /></div><figcaption>BLT sample vs control</figcaption></figure></div>` +
+      line("BLT’s caption: “172% mean node length increase” at the node below the seed-head."),
+      src: ["blt", "lev99"], det: `<h5 class="sd-h">Claimed man-made: where to look</h5>` + detList(LY.claimed) + `<h5 class="sd-h">Reported by BLT</h5><ul class="sd-list">${LY.reported.map((r) => `<li><p>${esc(r.text)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul>` + detList([LY.counterNote]) });
 
-    /* 6 time */
-    S.push(slide("", `<h3 class="sl-h">${esc(K.time.head)}</h3>
-      <div class="sl-vs">
-        <div class="sl-stat c"><b>${esc(K.time.a.big)}</b><span>${esc(K.time.a.small)}</span></div>
-        <div class="sl-stat u"><b>${esc(K.time.b.big)}</b><span>${esc(K.time.b.small)}</span></div>
-      </div>
-      <p class="sl-line">${esc(K.time.line)}</p>`, src(K.time.src)));
-
-    /* 7 longest */
-    const row = (b, i) => `<li>${i != null ? `<i>${i + 1}</i>` : ""}<div><b>${esc(b.name)}</b><span>${esc(b.year)} \u00b7 ${esc(b.time)}</span></div></li>`;
+    /* ——— Build time ——— */
+    add({ ch: "Build time", head: K.time.head, body: vs(K.time.a, K.time.b) + line("Paid builds were done with permission, often in daylight or over several sessions — so the makers didn’t need to stay hidden."),
+      src: K.time.src, det: `<p class="sd-p">${esc(T.lead.text)}</p><p class="sd-p">${esc(T.note)}</p>`, detKeys: T.lead.src });
+    const row = (b, i) => `<li><i>${i + 1}</i><div><b>${esc(b.name)}</b><span>${esc(b.year)} \u00b7 ${esc(b.time)}</span></div></li>`;
     const top = K.longest.topIds.map((n) => T.builds.find((b) => b.name === n)).filter(Boolean);
-    S.push(slide("", `${tag("c")}<h3 class="sl-h">${esc(K.longest.head)}</h3>
-      <ol class="sl-top">${top.map((b, i) => row(b, i)).join("")}</ol>
-      <button type="button" class="sl-more" data-all="1">See all ${T.builds.length} builds</button>
-      <div class="sl-all hidden" id="slAll"><div class="sl-all-head"><b>All reported build times</b><button type="button" class="sl-x" data-all="0" aria-label="Close">\u00d7</button></div>
-        <ul>${T.builds.map((b) => `<li><b>${esc(b.name)}</b><span>${esc(b.year)} \u00b7 ${esc(b.time)}${/not stated/i.test(b.light) ? "" : " \u00b7 " + esc(b.light.toLowerCase())}</span><small>${srcLinks(b.src.slice(0, 1))}</small></li>`).join("")}</ul></div>`,
-      src(top.flatMap((b) => b.src.slice(0, 1)))));
+    const bProof = (b) => C.proof.find((r) => r.build && r.build.split("|")[0] === b.name && (!r.build.split("|")[1] || r.build.split("|")[1] === b.year));
+    add({ ch: "Build time", top: tag("c"), head: K.longest.head, body: `<ol class="sl-top">${top.map((b, i) => { const p = bProof(b); return row(b, i).replace("</span></div>", `</span>${p ? pfBadge(p.s) : ""}</div>`); }).join("")}</ol>` +
+      `<button type="button" class="sl-more" data-sheet="builds">See all ${T.builds.length} builds</button>`,
+      src: top.flatMap((b) => b.src.slice(0, 1)) });
+    const jr = T.rows[0], mr = T.rows[1];
+    add({ ch: "Build time", top: pfBadge("n"), head: "Julia Set: claim vs window", body: vs({ big: "≈ 2¾ h", small: "claimed, 3 people, from about 2:45 am" }, { big: "45 min", small: "window “in full daylight” — Colin Andrews" }) +
+      line("Taken at face value, the claimed build ends around 5:30 am — after that day’s 5:01 am sunrise."),
+      src: ["si22", "andrewsJulia", "tadSalisbury"], det: detList(jr.build.concat(jr.window)) });
+    add({ ch: "Build time", top: tag("u"), head: "Milk Hill: 409 circles", body: big("≈ 30 s", "per circle — Circlemakers’ figure, for about four hours") +
+      quote("“…not even allowing any time for the surveying”", "Circlemakers, on Milk Hill (unclaimed)") + note("John Vidal’s guess: about 6 people, about 5 hours."),
+      src: ["cmTotc01", "vidal"], det: detList(mr.build) });
+    add({ ch: "Build time", top: tag("u"), head: "Milk Hill: the night", body: bul([
+        "Full night 11:06 pm–3:18 am (4 h 12 m); civil darkness 7 h 54 m",
+        "Heavy rain, but “no evidence of any mud on the stems” — Stuart Dike",
+        "John Hunt camped there: “I do not believe that the large formation was there” — though he “would not like to swear” to it"]),
+      src: ["tadSwindon", "ccc01"], det: detList(mr.window) });
 
-    /* mess-ups */
+    /* ——— Mess-ups ——— */
+    add({ ch: "Mess-ups", head: "Where are the mistakes?", body: bul([
+        "Enigma #21: 2000 was “the year that we started to see numerous errors in construction”",
+        "John Vidal on Milk Hill 2001: “quite well made - though there is evidence of sloppiness”",
+        "ICCRA, Wisconsin 2005: serrated edges, broken stalks, footprints, post holes",
+        "Rod Dickinson: the Julia Set’s central circle, “a little out of place”, was a work area"]) + note("Next: six mess-ups, one per slide."),
+      src: ["enigma21", "vidal", "iccra", "si22"], det: detList(MI.errors) });
     const n = K.messups.length;
     K.messups.forEach((m, i) => {
       const d = m.id ? item(m.id) : null;
-      const vis = m.big ? `<div class="sl-big"><b>${esc(m.big)}</b><span>${esc(m.bigSub)}</span></div><p class="sl-note">${esc(m.noPhoto)}</p>`
+      const vis = m.big ? big(m.big, m.bigSub) + note(m.noPhoto)
         : d ? `<div class="sl-media">${photoBtn(d, m.place + " " + m.date)}</div>`
-        : `<a class="sl-media" href="${esc(m.link)}" target="_blank" rel="noopener"><img src="${esc(m.img)}" alt="${esc(m.alt)}" loading="lazy" referrerpolicy="no-referrer" /></a>`;
-      S.push(slide("sl-mess", `${tag(`Mess-up ${i + 1} of ${n}`)}<h3 class="sl-h">${esc(m.head)}</h3>
-        <p class="sl-place">${esc(m.place)} \u00b7 ${esc(m.date)}</p>
-        ${vis}${m.credit ? `<p class="sl-credit">${esc(m.credit)}</p>` : ""}
-        <blockquote class="sl-q"><p>${esc(m.quote)}</p><cite>\u2014 ${esc(m.who)}</cite></blockquote>`, src(m.src)));
+        : ext(m.img, m.alt, m.link);
+      const isWO = /West Overton/.test(m.place);
+      add({ ch: "Mess-ups", cls: "sl-mess", top: tag(`Mess-up ${i + 1} of ${n}`) + (isWO ? pfBadge("y", "court") : ""), head: m.head,
+        body: `<p class="sl-place">${esc(m.place)} \u00b7 ${esc(m.date)}</p>${vis}${m.credit ? `<p class="sl-credit">${esc(m.credit)}</p>` : ""}` + quote(m.quote, m.who),
+        src: m.src, det: isWO ? `<p class="sd-p">${esc(pr("Seven-pointed star, West Overton").how)}</p>` : "" });
     });
 
-    /* counterpoint */
-    const bc = item(K.counter.id);
-    S.push(slide("", `${tag("Counterpoint")}<h3 class="sl-h">${esc(K.counter.head)}</h3>
-      <div class="sl-media">${photoBtn(bc, "Barbury Castle 2008, aerial")}</div>
-      <blockquote class="sl-q"><p>${esc(K.counter.quote)}</p><cite>\u2014 ${esc(K.counter.who)}</cite></blockquote>`, src(K.counter.src)));
+    /* ——— Other side ——— */
+    const bc2 = item(K.counter.id);
+    add({ ch: "The other side", top: tag("Counterpoint"), head: "Praised as precise", body: `<div class="sl-media">${photoBtn(bc2, "Barbury Castle 2008, aerial")}</div>` + quote(K.counter.quote, K.counter.who),
+      src: K.counter.src, det: detList(MI.noErrors) });
+    add({ ch: "The other side", head: "No mess-ups, they say", body: bul([
+        "Colin Andrews on the Julia Set: “awe inspiring, not only in symmetry and precision”",
+        "Astrophysicist Mike Reed on Barbury Castle: “The tenth digit has even been correctly rounded up.”",
+        "Stuart Dike on Milk Hill: no mud on the stems after heavy rain",
+        "Researchers argue stalks are bent, not broken, with no footprints (as summarised by CSICOP)"]),
+      src: ["andrewsJulia", "mail08", "ccc01", "csicop"], det: detList(MI.noErrors) });
 
-    /* years */
-    const BY = C.byYear;
-    S.push(slide("", `<h3 class="sl-h">${esc(K.years.head)}</h3>
-      <div class="st-seg" role="group" aria-label="Count">${BY.series.map((sr) => `<button type="button" data-series="${sr.key}" aria-pressed="${sr.key === claimsSeries}">${sr.key === "world" ? "Worldwide" : "England"}</button>`).join("")}</div>
-      <div class="st-chart" id="stChart"></div>
-      <p class="st-readout" id="stReadout"></p>
-      <p class="sl-line">${esc(K.years.line)}</p>`, `<p class="sl-src" id="stSrc"></p>`));
+    /* ——— Proof ——— */
+    const cnt = { y: 0, p: 0, n: 0 };
+    C.proof.forEach((r) => cnt[r.s]++);
+    add({ ch: "Proof", head: "Claims with proof vs claim only", body: `<div class="sl-pfcount">
+        <div class="pfc y"><b>${cnt.y}</b><span>Proof shown</span></div>
+        <div class="pfc p"><b>${cnt.p}</b><span>Partial</span></div>
+        <div class="pfc n"><b>${cnt.n}</b><span>Claim only</span></div></div>` +
+      line(`${C.proof.length} claims in this app. ${C.proofIntro}`) + `<button type="button" class="sl-more" data-sheet="proof">See all ${C.proof.length} with sources</button>`,
+      det: `<p class="sd-p">${esc(C.proofNote)}</p>`, detKeys: ["vidal"] });
+    const weak = C.proof.filter((r) => r.s !== "y");
+    add({ ch: "Proof", head: "Claim only or partial", body: `<ul class="sl-pfl">${weak.map((r) => `<li>${pfBadge(r.s)}<b>${esc(r.what)}</b><span>${esc(r.who)} \u00b7 ${esc(r.year)}</span></li>`).join("")}</ul>`,
+      src: weak.flatMap((r) => r.src), det: `<ul class="sd-list">${weak.map((r) => `<li><p><b>${esc(r.what)}</b> — ${esc(r.how)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul>` });
+    const strong = [
+      ["Doug & Dave’s 1991 demo circle", "press watched it made"],
+      ["BBC Country File demo", "filmed by the BBC"],
+      ["1992 contest entries", "invigilators, judges, photos"],
+      ["West Overton star, 2000", "guilty plea in court"],
+      ["Sarraltroff, 2018", "makers’ own video"],
+      ["LEGO, 2024", "client’s PR agency on record"],
+      [`${C.proof.filter((r) => r.who === "Circlemakers").length} Circlemakers commissions`, "clients, adverts, TV"]];
+    add({ ch: "Proof", top: pfBadge("y"), head: "Claims with proof shown", body: `<ul class="sl-pfl compact">${strong.map(([a, b]) => `<li><b>${esc(a)}</b><span>${esc(b)}</span></li>`).join("")}</ul>` + note("Proof covers only the formation named."),
+      src: ["today91", "cmBeeb", "sheldrake"], det: `<ul class="sd-list">${C.proof.filter((r) => r.s === "y").map((r) => `<li><p><b>${esc(r.what)}</b> (${esc(r.year)}) — ${esc(r.how)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul><p class="sd-p">${esc(C.proofNote)}</p>` });
 
-    /* close */
-    S.push(slide("sl-title", `<div class="sl-ring big" aria-hidden="true"><span></span></div>
-      <h3 class="sl-h">${esc(K.close.head)}</h3><p class="sl-line">${esc(K.close.line)}</p>
-      <button type="button" class="sl-go" data-go="0">\u21ba ${esc(K.close.again)}</button>`));
+    /* ——— Each year ——— */
+    add({ ch: "Each year", head: K.years.head, body: `<div class="st-seg" role="group" aria-label="Count">${BY.series.map((sr) => `<button type="button" data-series="${sr.key}" aria-pressed="${sr.key === claimsSeries}">${sr.key === "world" ? "Worldwide" : "England"}</button>`).join("")}</div>
+      <div class="st-chart" id="stChart"></div><p class="st-readout" id="stReadout"></p>` + line(K.years.line),
+      src: BY.series.flatMap((s) => s.src), det: `<p class="sd-p">${esc(BY.intro)}</p><p class="sd-p">${esc(BY.chartNote.replace(/ The right-hand number.*$/, ""))}</p>` + BY.series.map((s) => `<p class="sd-p">${esc(s.label)}</p>`).join("") });
+    add({ ch: "Each year", head: "Other published totals", body: bul([
+        "1980–83: 3, 3, 5 and 22 circles in Britain; 1987–89: 73, 113 and “over 250” — Terence Meaden",
+        "1990: “700 circles in Britain” — Jenny Randles",
+        "1991: about 800 — Rupert Sheldrake"]) + note("These count individual circles, not whole formations."),
+      src: ["si92", "sheldrake"], det: detList(BY.points.slice(0, 3)) });
+    add({ ch: "Each year", head: "Other totals, UK", body: bul([
+        "204 UK formations in 1992; a peak of 148 in 1999 — Paul Vigay",
+        "“around the 100 per year mark” for 1996–2003 — Vigay",
+        "Now “an average of 30” a year in the UK, ~80% in Wiltshire — BBC Travel, 2021",
+        "For scale: Doug & Dave said 25 to 30 a season (Time, 1991)"]),
+      src: ["vigayDist", "bbc21", "time91"], det: detList(BY.points.slice(3)) });
+
+    /* ——— End ——— */
+    add({ ch: "End", cls: "sl-title", top: '<div class="sl-ring big" aria-hidden="true"><span></span></div>', head: K.close.head,
+      body: line("Every slide names who said what — and whether they showed proof. Tap “Details” or “Source” to check.") + `<button type="button" class="sl-go" data-go="0">\u21ba ${esc(K.close.again)}</button>` });
 
     slideCount = S.length;
+    const sheetBuilds = `<ul class="sd-list">${T.builds.map((b) => { const p = bProof(b); return `<li><p><b>${esc(b.name)}</b> \u00b7 ${esc(b.year)} \u00b7 ${esc(b.where)}</p>
+        <p class="sd-row">${p ? pfBadge(p.s) : ""}</p>
+        <dl class="sd-dl"><dt>Time</dt><dd>${esc(b.time)}</dd><dt>Team</dt><dd>${esc(b.team)}</dd><dt>Size</dt><dd>${esc(b.size)}</dd><dt>Light</dt><dd>${esc(b.light)}</dd>${p ? `<dt>Proof</dt><dd>${esc(p.how)}</dd>` : ""}</dl>
+        <p class="sd-p">${esc(b.note)}</p><p class="sd-src">${srcLinks(b.src)}</p></li>`; }).join("")}</ul><p class="sd-p">${esc(T.note)}</p>`;
+    const sheetProof = `<p class="sd-p">${esc(C.proofIntro)}</p><ul class="sd-list">${C.proof.map((r) => `<li><p class="sd-row">${pfBadge(r.s)}</p><p><b>${esc(r.what)}</b> (${esc(r.year)}) — ${esc(r.who)}</p><p class="sd-p">${esc(r.how)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul><p class="sd-p">${esc(C.proofNote)}</p>`;
+    slideDet.builds = { title: `All ${T.builds.length} reported build times`, html: sheetBuilds };
+    slideDet.proof = { title: "Proof status — all claims", html: sheetProof };
+
     claimsBody.innerHTML = `<div class="deck" id="deck" aria-roledescription="carousel" aria-label="Who made them? slides" tabindex="0">
+        <div class="deck-prog"><span id="deckProg"></span></div>
         <div class="deck-track" id="deckTrack">${S.join("")}</div>
+        <div class="sd hidden" id="slSheet" role="dialog" aria-modal="true" aria-labelledby="sdTitle">
+          <div class="sd-panel"><div class="sd-head"><b id="sdTitle"></b><button type="button" class="sl-x" data-close="1" aria-label="Close">\u00d7</button></div><div class="sd-body" id="sdBody"></div></div>
+        </div>
         <div class="deck-bar">
           <button type="button" class="deck-arrow" data-dir="-1" aria-label="Previous slide">\u2039</button>
-          <div class="deck-dots" role="tablist">${S.map((_, i) => `<button type="button" role="tab" data-go="${i}" aria-label="Slide ${i + 1} of ${S.length}"></button>`).join("")}</div>
+          <div class="deck-mid"><span class="deck-ch" id="deckCh"></span><div class="deck-dots" id="deckDots"></div></div>
           <button type="button" class="deck-arrow" data-dir="1" aria-label="Next slide">\u203a</button>
         </div>
       </div>`;
+    claimsBody._chapters = chapters;
+    document.getElementById("slToc").outerHTML = `<ol class="sl-toc">${chapters.slice(1, -1).map((c) => `<li><button type="button" data-go="${c.start}">${esc(c.name)}</button></li>`).join("")}</ol>`;
+    claimsBody.querySelectorAll("img.ext").forEach((im) => {
+      const fail = () => im.classList.add("failed");
+      im.addEventListener("error", fail);
+      if (im.complete && !im.naturalWidth && im.getAttribute("src")) im.addEventListener("load", () => {}, { once: true });
+    });
     claimsBody.dataset.ready = "1";
     drawYearChart();
     bindDeck();
     sizeDeck();
     goSlide(slideIdx, true);
   }
+
+  function openSheet(key) {
+    const d = slideDet[key];
+    if (!d) return;
+    document.getElementById("sdTitle").textContent = d.title;
+    document.getElementById("sdBody").innerHTML = d.html;
+    document.getElementById("sdBody").scrollTop = 0;
+    document.getElementById("slSheet").classList.remove("hidden");
+  }
+  function closeSheet() { const s = document.getElementById("slSheet"); if (s) s.classList.add("hidden"); }
 
   function sizeDeck() {
     const deck = document.getElementById("deck");
@@ -401,11 +621,18 @@
     track.style.transition = instant ? "none" : "";
     track.style.transform = `translateX(${-slideIdx * 100}%)`;
     track.querySelectorAll(".slide").forEach((s, k) => s.setAttribute("aria-hidden", String(k !== slideIdx)));
-    claimsView.querySelectorAll(".deck-dots button").forEach((b, k) => b.setAttribute("aria-selected", String(k === slideIdx)));
-    claimsView.querySelectorAll('[data-dir="-1"]').forEach((b) => { b.disabled = slideIdx === 0; });
-    claimsView.querySelectorAll('[data-dir="1"]').forEach((b) => { b.disabled = slideIdx === slideCount - 1; });
-    const all = document.getElementById("slAll");
-    if (all) all.classList.add("hidden");
+    const chs = claimsBody._chapters || [];
+    let ci = 0;
+    chs.forEach((c, k) => { if (c.start <= slideIdx) ci = k; });
+    const c = chs[ci], end = ci + 1 < chs.length ? chs[ci + 1].start : slideCount;
+    document.getElementById("deckCh").textContent = `${c ? c.name : ""} \u00b7 ${slideIdx + 1}/${slideCount}`;
+    const dots = [];
+    for (let k = c.start; k < end; k++) dots.push(`<button type="button" data-go="${k}" aria-label="Slide ${k + 1} of ${slideCount}"${k === slideIdx ? ' aria-current="true"' : ""}></button>`);
+    document.getElementById("deckDots").innerHTML = dots.join("");
+    document.getElementById("deckProg").style.width = ((slideIdx + 1) / slideCount * 100).toFixed(2) + "%";
+    claimsView.querySelectorAll('.deck-bar [data-dir="-1"]').forEach((b) => { b.disabled = slideIdx === 0; });
+    claimsView.querySelectorAll('.deck-bar [data-dir="1"]').forEach((b) => { b.disabled = slideIdx === slideCount - 1; });
+    closeSheet();
   }
 
   function bindDeck() {
@@ -413,7 +640,7 @@
     const track = document.getElementById("deckTrack");
     let x0 = null, y0 = 0, dx = 0, horiz = null;
     deck.addEventListener("touchstart", (e) => {
-      if (e.target.closest(".sl-all, .st-chart")) { x0 = null; return; }
+      if (e.target.closest(".sd, .st-chart")) { x0 = null; return; }
       x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; horiz = null;
     }, { passive: true });
     deck.addEventListener("touchmove", (e) => {
@@ -434,7 +661,10 @@
       if (horiz && Math.abs(dx) > Math.min(70, w * 0.18)) goSlide(slideIdx + (dx < 0 ? 1 : -1));
       else goSlide(slideIdx);
     });
-    deck.addEventListener("keydown", (e) => {
+    document.addEventListener("keydown", (e) => {
+      if (claimsView.classList.contains("hidden") || !document.getElementById("overlay").classList.contains("hidden")) return;
+      if (e.target.closest && e.target.closest("input, textarea, select")) return;
+      if (!document.getElementById("slSheet").classList.contains("hidden")) { if (e.key === "Escape") closeSheet(); return; }
       if (e.key === "ArrowRight") { goSlide(slideIdx + 1); e.preventDefault(); }
       if (e.key === "ArrowLeft") { goSlide(slideIdx - 1); e.preventDefault(); }
     });
@@ -565,8 +795,12 @@
   }
 
   claimsView.addEventListener("click", (e) => {
-    const all = e.target.closest("[data-all]");
-    if (all) { document.getElementById("slAll").classList.toggle("hidden", all.dataset.all === "0"); return; }
+    if (e.target.closest("[data-close]") || e.target.id === "slSheet") { closeSheet(); return; }
+    const dt = e.target.closest("[data-det]");
+    if (dt) { openSheet(+dt.dataset.det); return; }
+    const sh = e.target.closest("[data-sheet]");
+    if (sh) { openSheet(sh.dataset.sheet); return; }
+    if (e.target.closest(".sd")) return;
     const go = e.target.closest("[data-go]");
     if (go) { goSlide(+go.dataset.go); return; }
     const dir = e.target.closest("[data-dir]");
@@ -593,7 +827,7 @@
     }
     /* tap the left or right edge of a slide to move */
     const sl = e.target.closest(".slide");
-    if (sl && !e.target.closest("a, button, .sl-all")) {
+    if (sl && !e.target.closest("a, button")) {
       const r = sl.getBoundingClientRect();
       const fx = (e.clientX - r.left) / r.width;
       if (fx < 0.22) goSlide(slideIdx - 1); else if (fx > 0.78) goSlide(slideIdx + 1);
