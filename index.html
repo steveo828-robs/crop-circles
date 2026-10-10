@@ -24,8 +24,10 @@
       <nav class="nav" aria-label="Primary">
         <a href="#gallery" class="nav-link active" data-view="gallery">Gallery</a>
         <a href="#hotspots" class="nav-link" data-view="hotspots">Hotspots</a>
+        <a href="#ufo" class="nav-link" data-view="ufo">UFOs</a>
         <a href="#evidence" class="nav-link" data-view="evidence">Evidence</a>
         <a href="#claims" class="nav-link" data-view="claims">Claims</a>
+        <a href="#kab" class="nav-link" data-view="kab">Kab</a>
       </nav>
     </div>
     <div class="filters" id="galleryFilters">
@@ -34,6 +36,7 @@
       </select>
       <label class="chk"><input type="checkbox" id="meaningFilter" /> Has meaning</label>
       <label class="chk"><input type="checkbox" id="anomalyFilter" /> Has strange findings</label>
+      <label class="chk chk-q"><input type="checkbox" id="quartzFilter" /> Near quartz</label>
       <input id="search" type="search" placeholder="Search…" aria-label="Search" autocomplete="off" />
       <span id="count" class="count"></span>
     </div>
@@ -50,12 +53,22 @@
     <p class="evidence-lede" id="hotspotsLede">Places where more than one formation in this gallery has been recorded.</p>
     <div id="hotspotMap" class="hotspot-map" role="region" aria-label="Map of formation locations"></div>
     <p class="map-note" id="mapNote"></p>
+    <div id="whyHere" class="story"></div>
+    <h2 class="hs-list-h">Every repeat site</h2>
     <ol id="hotspotList" class="hotspot-list"></ol>
   </section>
 
+  <section id="ufo" class="evidence story-view hidden" aria-label="UFOs">
+    <div id="ufoBody" class="story"></div>
+  </section>
+
+  <section id="kab" class="kab hidden" aria-label="Kab's crop circles">
+    <div id="kabBody"></div>
+  </section>
+
   <section id="evidence" class="evidence hidden" aria-label="Evidence">
-    <div id="orbCard" class="orb-card"></div>
-    <h2>Strange findings</h2>
+    <div id="evBody" class="story"></div>
+    <h2>Plant photos</h2>
     <p class="evidence-lede">
       Published plant and field reports — including bent or elongated stem nodes and expulsion cavities —
       from researchers such as the BLT Research Team. Claims are attributed to those sources;
@@ -87,6 +100,7 @@
   <script src="vendor/leaflet/leaflet.js"></script>
   <script src="hotspots.js"></script>
   <script src="claims.js"></script>
+  <script src="extras.js"></script>
   <script src="app.js"></script>
   <script>
     if ("serviceWorker" in navigator) {

@@ -10,6 +10,11 @@
   const yearFilter = document.getElementById("yearFilter");
   const meaningFilter = document.getElementById("meaningFilter");
   const anomalyFilter = document.getElementById("anomalyFilter");
+  const quartzFilter = document.getElementById("quartzFilter");
+  const ufoView = document.getElementById("ufo");
+  const whyHere = document.getElementById("whyHere");
+  const ufoBody = document.getElementById("ufoBody");
+  const evBody = document.getElementById("evBody");
   const search = document.getElementById("search");
   const countEl = document.getElementById("count");
   const galleryFilters = document.getElementById("galleryFilters");
@@ -201,6 +206,7 @@
       if (y !== "all" && String(item.year) !== y) return false;
       if (needM && !(item.meaning && item.meaning.summary)) return false;
       if (needA && !(item.anomalies && item.anomalies.length)) return false;
+      if (quartzFilter.checked && !quartzTag.has(item.id)) return false;
       if (q && !haystack(item).includes(q)) return false;
       return true;
     });
@@ -219,6 +225,7 @@
       if (item.anomalies && item.anomalies.length) badges.push('<span class="badge anomaly">Strange findings</span>');
       const rep = repeatOf(item);
       if (rep) badges.push(`<span class="badge repeat">Repeat site \u00d7${rep.count}</span>`);
+      if (quartzTag.has(item.id)) badges.push('<span class="badge quartz">Near quartz</span>');
       return `<article class="card${item.featured ? " featured" : ""}" tabindex="0" data-id="${esc(item.id)}">
         <div class="card-photo"><img src="${esc(item.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.opacity=0.2" /></div>
         <div class="card-body">
@@ -344,274 +351,114 @@
       slideMeta[i] = chap;
     };
 
+    /* v10: cut to claims with photos/video of the formation itself */
+    const KEEP = ["Demonstrations for the press, 1991", "BBC Country File demo, ~200 ft, 100 circles", "1992 crop-circle-making competition entries",
+      "Sarraltroff, Moselle test formation", "Mitsubishi ‘Space Star’, East Field", "National Geographic square spiral", "Greenpeace, Oaxaca, Mexico",
+      "The Levellers video, Poynings", "History Channel logo", "Korn (rock band), Bakersfield", "Big Brother 4 logo (Channel 4)", "Julia Set, near Stonehenge"];
+    const P = KEEP.map(pr).filter(Boolean);
+    claimsBody._proof = P;
+
     /* ——— Intro ——— */
     add({ ch: "Start", cls: "sl-title", top: '<div class="sl-ring big" aria-hidden="true"><span></span></div>', head: K.title.head,
-      body: line("People who said they made crop circles, whether they showed proof, and what others say back. This app doesn’t decide who is right.") + `<button type="button" class="sl-go" data-go="1">${esc(K.title.hint)}</button>` });
-    add({ ch: "Start", head: "In this deck", body: `<div class="sl-toc" id="slToc"></div>` });
+      body: line("Only the claims where you can see the formation itself — in footage or photos. Who said they made it, and the proof they showed.") + `<button type="button" class="sl-go" data-go="1">${esc(K.title.hint)}</button>` });
     add({ ch: "Start", head: "How to read the badges",
       body: `<ul class="sl-legend">
-        <li>${pfBadge("y")}<span>The proof itself is linked: video of the build, build photos, or a court report.</span></li>
-        <li>${pfBadge("p")}<span>Some proof, but of something smaller — e.g. a simple demo, not the formations claimed.</span></li>
-        <li>${pfBadge("n", "", "short")}<span>Footage, an advert or a broadcast was said to exist — we couldn’t find it online.</span></li>
+        <li>${pfBadge("y")}<span>The proof itself is linked: video of the build or build photos.</span></li>
+        <li>${pfBadge("p")}<span>Some proof, but not of the whole thing claimed.</span></li>
         <li>${pfBadge("n")}<span>They said it; no footage, witness or paperwork was published.</span></li>
         <li class="sl-tags2"><span class="sl-tag c">Claimed man-made</span><span class="sl-tag u">Reported unexplained</span><span>Someone said they made it \u00b7 researchers presented it as unexplained.</span></li></ul>`,
       det: `<p class="sd-p">${esc(C.proofIntro)}</p>` });
 
     /* ——— Doug & Dave ——— */
-    const dd = pr(C.proof[0].what);
-    add({ ch: "Doug & Dave", top: tag("c") + pfBadge("p"), head: "Doug & Dave", body: big("1978", "the year Bower said their first circle was made") +
-      line("Two men from Southampton went public in Today on 9 September 1991.") + note(dd.how),
-      src: ["today91", "time91"], det: detList(D[0].points) + `<h5 class="sd-h">The other side</h5>` + detList(D[0].counter) + `<h5 class="sd-h">Proof status</h5><p class="sd-p">${esc(dd.how)}</p>`, detKeys: dd.src });
-    add({ ch: "Doug & Dave", head: "What they said they used", body: bul([
-        "“4ft wooden plinths, with rope reins, a ball of string and an old baseball cap”",
-        "Wire threaded through the cap’s visor as a sighting loop",
-        "Bower: the first was made “with the iron bar I used to secure the back door of my shop… on our hands and knees”",
-        "Today says it questioned them for seven days at their homes"]),
-      src: ["today91"], det: detList(D[0].points.slice(0, 4)) });
-    const ch = pr("First circles, Cheesefoot Head ‘punchbowl’");
-    add({ ch: "Doug & Dave", top: pfBadge("n"), head: "When did they start?", body: vs({ big: "1978", small: "Bower, in Today (1991)" }, { big: "1976", small: "Smithsonian; Circlemakers (Longwood Estate, “about 30 feet across”)", c: "c" }) +
-      line("The Croppie notes the start date varies between accounts: 1975, 1976 or 1978.") + note("Early circles: their own account only. " + "No footage or outside witness cited."),
-      src: ["today91", "smithsonian", "cmNews", "croppie"], det: detList([D[0].points[1], D[0].points[2], D[0].counter[1]]) + `<h5 class="sd-h">Proof status</h5><p class="sd-p">${esc(ch.how)}</p>` });
     const ddDemo = pr("Demonstrations for the press, 1991");
-    add({ ch: "Doug & Dave", top: pfOf(ddDemo, "demo only"), head: "The Delgado episode",
-      body: quote("“No human could have done this.”", "Pat Delgado, after inspecting their demo circle near Sevenoaks, Kent") +
-      line("Today journalists had watched the pair make it “step by step” hours earlier.") + pvBtn(ddDemo.pv[0], true) + note("Simple designs — not the complex formations."),
-      src: ["today91", "gettyDD"], det: detList([D[0].points[5]]) + `<p class="sd-p">${esc(ddDemo.how)}</p>` + pvDet(ddDemo) + detList([MI.errors[6]]) });
+    add({ ch: "Doug & Dave", cls: "sl-pv", top: tag("c") + pfOf(ddDemo, "demo"), head: "Doug & Dave, 1991",
+      body: line("Two men from Southampton went public in Today on 9 September 1991, saying they’d made circles since 1978 — then made one for the press.") +
+      quote("“No human could have done this.”", "Pat Delgado, after inspecting their demo circle near Sevenoaks, Kent") +
+      pvBtn(ddDemo.pv[0]) + note("Simple designs — not the complex formations."),
+      src: ["today91", "gettyDD"], det: detList(D[0].points) + `<h5 class="sd-h">The other side</h5>` + detList(D[0].counter) + `<p class="sd-p">${esc(ddDemo.how)}</p>` + pvDet(ddDemo) });
     add({ ch: "Doug & Dave", head: "Their count vs the total", body: vs({ big: "25–30", small: "new circles a season, they said (Time, 1991)" }, { big: "≈ 800", small: "the annual count by 1991 (Rupert Sheldrake)", c: "n" }) +
       quote("“…a maximum of 30 formations a year”", "Rupert Sheldrake, even if their claims were believed"),
       src: ["time91", "sheldrake"], det: detList([D[0].points[4], D[0].counter[0]]) });
 
+    /* ——— Filmed builds ——— */
+    const c92 = pr("1992 crop-circle-making competition entries"), g92 = G.items[0];
+    add({ ch: "Filmed builds", cls: "sl-pv", top: tag("c") + pfOf(c92), head: "The 1992 contest",
+      body: line("West Wycombe, 11 July 1992: 12 teams, one set design, 10 pm–3 am in the dark. Winners: three Westland Helicopters engineers, £3,000.") + pvEmbed(c92.pv[0]) +
+      `<a class="sl-link" href="${esc(g92.link)}" target="_blank" rel="noopener">Aerial photo of the entries (John Macnish) \u2197</a>`,
+      src: ["sheldrake", "yt1992"], det: pvDet(c92) + detList([D[2].points[0]]) + `<p class="sd-p">${esc(c92.how)}</p>` });
+    const sr = pr("Sarraltroff, Moselle test formation"), sar = G.items.find((g) => g.img);
+    add({ ch: "Filmed builds", cls: "sl-pv", top: tag("c") + pfOf(sr, "video"), head: "Sarraltroff, 2018",
+      body: line("French YouTubers made it at night in “under two hours” — their video of the build:") + pvEmbed(sr.pv[0]) +
+      `<p class="pv-shows"><b>What it shows:</b> ${esc(sr.pv[0].shows)}</p>`,
+      src: ["ytAstro", "fi18", "rl18"], det: `<p class="sd-p">${esc(sar.who)}</p><p class="sd-p">${esc(sr.how)}</p>` + pvDet(sr) +
+      `<h5 class="sd-h">Design</h5><div class="sd-img"><img src="${esc(sar.img)}" alt="${esc(sar.imgAlt)}" loading="lazy" /></div><p class="sd-src">${esc(sar.imgKind)} \u00b7 Wizly-08, CC BY-SA 4.0</p>`, detKeys: ["commonsSarr"] });
+    const cf = pr("BBC Country File demo, ~200 ft, 100 circles");
+    add({ ch: "Filmed builds", cls: "sl-pv", top: tag("c") + pfOf(cf), head: "BBC Countryfile build",
+      body: `<p class="sl-place">${esc(cf.who)} \u00b7 ${esc(cf.year)}</p>` + pvEmbed(cf.pv[0]) + `<p class="pv-shows"><b>What it shows:</b> ${esc(cf.pv[0].shows)}</p>`,
+      src: cf.src, det: `<p class="sd-p">${esc(cf.how)}</p>` + pvDet(cf) });
+
     /* ——— Circlemakers ——— */
-    const cmRows = C.proof.filter((r) => /^Circlemakers/.test(r.who));
-    const cmC = { y: cmRows.filter((r) => r.s === "y").length, p: cmRows.filter((r) => r.s === "p").length, n: cmRows.filter((r) => r.s === "n").length };
-    add({ ch: "Circlemakers", top: tag("c") + pfBadge("p", `proof online for ${cmC.y} of ${cmRows.length}`), head: "Circlemakers",
-      body: big("1995", "website started by John Lundberg, Rod Dickinson & Geoff Gilbertson") + line("Members named include John Lundberg, Rod Dickinson, Wil Russell and Rob Irving. They make formations for adverts, TV and bands."),
-      src: ["cmAbout", "cmWork"], det: detList(D[1].points) });
-    add({ ch: "Circlemakers", head: "Their tools", body: bul([
-        "Stalk-stompers, 4 ft and 6 ft",
-        "Pre-stretched nylon string and a 2 ft marking pole",
-        "100 ft surveying tape and an OS map",
-        "Optional: an infrared image intensifier"]) +
-      quote("“All we had were sketches, 100ft-long tape measures… and 4ft planks with a rope connecting each end.”", "John Vidal, The Guardian, watching a team of four at night"),
-      src: ["cmTools", "vidal"], det: detList([D[1].points[1], D[1].points[3]]) });
-    add({ ch: "Circlemakers", top: pfBadge("p", `proof online for ${cmC.y} of ${cmRows.length}`), head: "Paid work", body: bul([
-        "Adverts: Mitsubishi (1998), Mountain Dew (2000), Weetabix (2002), Nike Italy (2005)",
-        "TV: BBC Country File, HTV West, History Channel, National Geographic (2004, 2009), BBC’s QI",
-        "Campaigns: Greenpeace Mexico, The Sun’s Olympic rings, Tesco Mobile emojis (2015)",
-        "Music: The Levellers (2002), Korn (2010)"]) + note(`Of the ${cmRows.length} in the proof table: proof online for ${cmC.y}, partial for ${cmC.p}, not found for ${cmC.n}.`),
-      src: ["cmWork", "cmNews"], det: detList([D[1].points[2]]) + `<p class="sd-p">${esc(C.proofNote)}</p>` });
+    const cmRows = P.filter((r) => /^Circlemakers/.test(r.who) && r.what !== cf.what);
+    add({ ch: "Circlemakers", top: tag("c"), head: "Circlemakers: the build photos",
+      body: line("Paid builds for adverts, TV and bands — build photos on their own site.") +
+      `<ul class="sl-pfl compact pv-list">${cmRows.map((r) => `<li><a href="${esc(pvHref(r.pv[0]))}" target="_blank" rel="noopener"><b>${esc(r.what)}</b><span>${r.s === "p" ? "Partial \u00b7 " : ""}${esc(r.year)} \u00b7 ${esc(pvShort(r.pv[0]))} \u2197</span></a></li>`).join("")}</ul>`,
+      src: ["cmWork", "cmAbout"], det: `<ul class="sd-list">${cmRows.map((r) => `<li>${pfOf(r)}<p><b>${esc(r.what)}</b> (${esc(r.year)}) — ${esc(r.how)}</p>${r.pv.map((v) => pvBtn(v, true)).join("")}<p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul><p class="sd-p">${esc(C.proofNote)}</p>` });
     add({ ch: "Circlemakers", head: "What they don’t claim", body: quote("“…careful never to admit responsibility for any specific formation”", "John Vidal, The Guardian, on crop-circle makers") +
       line("We found no formation in this gallery publicly claimed by the Circlemakers.") + note("Barbury Castle 2008: the Daily Mail reported “no one has claimed responsibility”."),
       src: ["vidal", "mail08"], det: detList([D[1].points[4]]) + `<p class="sd-p">${esc(D[1].note)}</p>` });
 
-    /* ——— 1992 contest ——— */
-    const c92 = pr("1992 crop-circle-making competition entries");
-    add({ ch: "1992 contest", top: tag("c") + pfOf(c92), head: "The 1992 contest", body: vs({ big: "12 teams", small: "one set design, plots marked out by the organisers" }, { big: "10 pm–3 am", small: "in darkness — up to 5 hours", c: "n" }) +
-      line("West Wycombe, 11 July 1992. Winners: three Westland Helicopters engineers, £3,000."),
-      src: ["sheldrake"], det: detList([D[2].points[0]]) + `<h5 class="sd-h">Proof status</h5><p class="sd-p">${esc(c92.how)}</p>` });
-    add({ ch: "1992 contest", head: "How it was run", body: bul([
-        "Plots marked out by the organisers, allocated at random",
-        "Invigilators with night-vision binoculars; points for not being seen",
-        "Five judges, plus aerial photos at dawn",
-        "The winners made it again in daylight, before the public and TV crews"]),
-      src: ["sheldrake"], det: `<p class="sd-p">${esc(c92.how)}</p>` });
-    const g92 = G.items[0];
-    add({ ch: "1992 contest", head: "What happened", body: bul([
-        "11 of 12 teams “made more or less impressive formations that followed the set design”",
-        "One team (Matt Ridley’s) made a question mark instead",
-        "Doug & Dave were invited, and declined",
-        "Design notice: the text says three weeks ahead; a photo caption says 24 hours"]) +
-      pvBtn(c92.pv[0], true) + `<a class="sl-link" href="${esc(g92.link)}" target="_blank" rel="noopener">Aerial photo of the entries (John Macnish) \u2197</a>`,
-      src: ["sheldrake", "yt1992"], det: pvDet(c92) + `<p class="sd-p">${esc(G.noPhotoNote)}</p>` + detList([D[2].points[0]]) + `<p class="sd-p">${esc(T.builds.find((b) => b.name === "1992 making competition").note)}</p>` });
-
-    /* ——— Other claims ——— */
-    const jl = pr("Julia Set, near Stonehenge");
-    add({ ch: "Other claims", top: tag("c") + pfBadge("n"), head: "Julia Set, 1996",
-      body: quote("“…made the previous night, by three people, in about two and three-quarters hours”", "Rod Dickinson, to researcher Michael Lindemann") +
-      line("The makers were not named.") + note("Radford: “there exists no photographs or video of it being made.”"),
-      src: ["si22"], det: detList([D[2].points[1]]) + `<h5 class="sd-h">Proof status</h5><p class="sd-p">${esc(jl.how)}</p>` });
-    const an = pr("Ansty — Mothership Glass commission");
-    add({ ch: "Other claims", top: tag("c") + pfBadge("n"), head: "Ansty, 2016", body: big("3 days", "reported build time, with the field owners’ agreement") +
-      line("Colin Andrews reported it was a paid commission for Mothership Glass.") + note("Andrews says the makers’ names are “known to me” — none published."),
-      src: ["ansty16"], det: `<p class="sd-p">${esc(an.how)}</p><p class="sd-p">${esc(T.builds.find((b) => b.name === "Mothership Glass (reported)").note)}</p>` });
-    const lg = pr("LEGO Space, Narromine NSW");
-    add({ ch: "Other claims", top: tag("c") + pfOf(lg), head: "LEGO, 2024", body: big("3 days", "“three full days” — Clare Basire, Thrive PR") +
-      line("A 50 m design based on a LEGO Minifigure at Narromine, NSW, for LEGO’s space range.") + note("Missing: " + lg.missing),
-      src: ["lego24", "thriveLego"], det: `<p class="sd-p">${esc(lg.how)}</p><p class="sd-p"><b>Missing:</b> ${esc(lg.missing)}</p><p class="sd-p">${esc(T.builds.find((b) => b.name === "LEGO Australia").note)}</p>` });
-    const sar = G.items.find((g) => g.img);
-    const sr = pr("Sarraltroff, Moselle test formation");
-    add({ ch: "Other claims", cls: "sl-pv", top: tag("c") + pfOf(sr, "video"), head: "Sarraltroff, 2018",
-      body: line("French YouTubers made it at night in “under two hours” — here is their video of the build.") + pvEmbed(sr.pv[0]) +
-      `<p class="pv-shows"><b>What it shows:</b> ${esc(sr.pv[0].shows)}</p><a class="sl-link" href="${esc(ytUrl(sr.pv[0].yt))}" target="_blank" rel="noopener">Open on YouTube \u2197</a>`,
-      src: ["ytAstro", "fi18", "rl18"], det: `<p class="sd-p">${esc(sar.who)}</p><p class="sd-p">${esc(sr.how)}</p>` + pvDet(sr) +
-      `<h5 class="sd-h">Design</h5><div class="sd-img"><img src="${esc(sar.img)}" alt="${esc(sar.imgAlt)}" loading="lazy" /></div><p class="sd-src">${esc(sar.imgKind)} \u00b7 Wizly-08, CC BY-SA 4.0</p>`, detKeys: ["commonsSarr"] });
-    add({ ch: "Other claims", head: "A researcher’s estimate", body: big("80%", "man-made, in Colin Andrews’ view (BBC News, 2000)") +
-      line("He put about 20% down to eddies in the earth’s magnetic field."), src: ["bbc2000"], det: detList([D[2].points[2]]) });
-
-    /* ——— Claimed formations ——— */
-    const tile = (g) => {
-      const p = pr(g.proof);
-      return `<li class="sl-gt">${g.img ? `<img src="${esc(g.img)}" alt="${esc(g.imgAlt)}" loading="lazy" />` : ""}
-        <b>${esc(g.title)}</b><span>${esc(g.date)}</span>${p ? pfOf(p, "", true) : ""}
-        ${g.link ? `<a href="${esc(g.link)}" target="_blank" rel="noopener">Photos \u2197</a>` : `<small>${esc(g.imgKind || "")}</small>`}</li>`;
-    };
-    const gi = G.items;
-    [[0, 4], [4, 8], [8, 11]].forEach(([a, b], k) => add({ ch: "Claimed formations", top: tag("c"), head: `Formations people said they made (${k + 1}/3)`, cls: "sl-gal",
-      body: `<ul class="sl-grid">${gi.slice(a, b).map(tile).join("")}</ul>` + (k === 2 ? note("No openly licensed photos of the 1992 entries or Circlemakers’ commissions — tiles link to them.") : ""),
-      src: gi.slice(a, b).flatMap((g) => g.src), det: `<ul class="sd-list">${gi.slice(a, b).map((g) => `<li><p><b>${esc(g.title)}</b> (${esc(g.date)}, ${esc(g.where)}) — ${esc(g.who)}</p><p class="sd-src">${srcLinks(g.src)}</p></li>`).join("")}</ul><p class="sd-p">${esc(G.noPhotoNote)}</p>` }));
-
-    /* ——— Simple vs complex ——— */
-    const mh = item("2001-08-12-milk-hill-galaxy-spiral");
-    add({ ch: "Simple vs complex", head: K.simple.head, body: `<div class="sl-split">
-        <figure>${tag("c")}<div class="sl-tile"><div class="sl-ring" aria-hidden="true"><span></span></div></div><figcaption>Doug &amp; Dave’s ring</figcaption></figure>
-        <figure>${tag("u")}<div class="sl-tile">${photoBtn(mh, "Milk Hill 2001, aerial")}</div><figcaption>Milk Hill, 2001</figcaption></figure></div>` + line(K.simple.line),
-      src: K.simple.src, det: `<p class="sd-p">Doug &amp; Dave’s “hallmark”: ${esc(C.compare.tiles[0].text)}</p><p class="sd-p">${esc(C.compare.tiles[1].text)} Photo: ${esc(mh ? mh.photoCredit : "")}</p>` });
-    const bc = item("2008-06-01-barbury-castle-pi");
-    add({ ch: "Simple vs complex", top: tag("u"), head: "Barbury Castle π, 2008", body: `<div class="sl-media">${photoBtn(bc, "Barbury Castle 2008, aerial")}</div>` +
-      line("Pi to 10 digits in a 150 ft design. No one claimed it.") + note("Rain the night before, but no mud inside — Lucy Pringle."),
-      src: ["plus08", "mail08"], det: detList(T.rows[2].build.concat(T.rows[2].window)) + `<p class="sd-p">${esc(C.compare.tiles[2].text)}</p>` });
-
-    /* ——— Up close ——— */
-    add({ ch: "Up close", top: tag("u"), head: K.nodes.head, body: `<div class="sl-media"><img src="${esc(K.nodes.img)}" alt="${esc(K.nodes.alt)}" loading="lazy" /></div>` + line(K.nodes.line) + note(K.nodes.note),
-      src: K.nodes.src, det: `<p class="sd-p">${esc(LY.reported[0].text)}</p>` });
-    add({ ch: "Up close", top: tag("u"), head: "What BLT Research reports", body: bul([
-        "Longer, bent nodes (usually 45–90°) and ‘expulsion cavities’ vs control plants",
-        "Their own plank-flattened test circles: nodes ~10% longer after 3 days — vs “30 to an over 200% increase” in formations",
-        "Expulsion cavities “never been observed in literally thousands of control plants”",
-        "Planks or feet on canola “will snap or break the plant stems” — not yet “scientifically evaluated”"]),
-      src: ["blt", "lev94", "lev99"], det: detList(CP.plants.slice(0, 4)) });
-    add({ ch: "Up close", head: "The other side", body: bul([
-        "Grassi, Cocheo & Russo (CICAP): longer nodes are what “we should expect when whatever kind of mechanical force flattens the plants, rope and wood plank included”",
-        "Joe Nickell: wheat is green and pliable mid-May to August, so pressed stalks need not break",
-        "ICCRA: a formation they judged mechanically made had broken stalks, creases — and no node elongation"]),
-      src: ["grassi", "csicop", "iccra"], det: detList(CP.plantCounter.concat([CP.plants[4]])) });
-    add({ ch: "Up close", head: "Side by side", body: `<div class="sl-split">
-        <figure>${tag("c")}<div class="sl-tile sl-empty"><span>No licensed close-up of a claimed formation’s crop found</span></div><figcaption>Claimed man-made</figcaption></figure>
-        <figure>${tag("u")}<div class="sl-tile"><img src="${esc(LY.reported[1].img)}" alt="Node length comparison, BLT Research" loading="lazy" /></div><figcaption>BLT sample vs control</figcaption></figure></div>` +
-      line("BLT’s caption: “172% mean node length increase” at the node below the seed-head."),
-      src: ["blt", "lev99"], det: `<h5 class="sd-h">Claimed man-made: where to look</h5>` + detList(LY.claimed) + `<h5 class="sd-h">Reported by BLT</h5><ul class="sd-list">${LY.reported.map((r) => `<li><p>${esc(r.text)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul>` + detList([LY.counterNote]) });
-
-    /* ——— Build time ——— */
-    add({ ch: "Build time", head: K.time.head, body: vs(K.time.a, K.time.b) + line("Paid builds were done with permission, often in daylight or over several sessions — so the makers didn’t need to stay hidden."),
-      src: K.time.src, det: `<p class="sd-p">${esc(T.lead.text)}</p><p class="sd-p">${esc(T.note)}</p>`, detKeys: T.lead.src });
-    const row = (b, i) => `<li><i>${i + 1}</i><div><b>${esc(b.name)}</b><span>${esc(b.year)} \u00b7 ${esc(b.time)}</span></div></li>`;
-    const top = K.longest.topIds.map((n) => T.builds.find((b) => b.name === n)).filter(Boolean);
-    const bProof = (b) => C.proof.find((r) => r.build && r.build.split("|")[0] === b.name && (!r.build.split("|")[1] || r.build.split("|")[1] === b.year));
-    add({ ch: "Build time", top: tag("c"), head: K.longest.head, body: `<ol class="sl-top">${top.map((b, i) => { const p = bProof(b); return row(b, i).replace("</span></div>", `</span>${p ? pfOf(p, "", true) : ""}</div>`); }).join("")}</ol>` +
-      `<button type="button" class="sl-more" data-sheet="builds">See all ${T.builds.length} builds</button>`,
-      src: top.flatMap((b) => b.src.slice(0, 1)) });
-    const jr = T.rows[0], mr = T.rows[1];
-    add({ ch: "Build time", top: pfBadge("n"), head: "Julia Set: claim vs window", body: vs({ big: "≈ 2¾ h", small: "claimed, 3 people, from about 2:45 am" }, { big: "45 min", small: "window “in full daylight” — Colin Andrews" }) +
+    /* ——— Julia Set ——— */
+    const jl = pr("Julia Set, near Stonehenge"), jr = T.rows[0], mr = T.rows[1];
+    add({ ch: "Julia Set", top: tag("c") + pfBadge("n"), head: "Julia Set, 1996",
+      body: ext("https://www.colinandrews.net/sitebuilder/images/JuliaSet_Stonehenge-564x419.jpg", "Aerial photo of the Julia Set formation beside Stonehenge", "https://colinandrews.net/JuliaSetStory2.html") +
+      `<p class="sl-credit">Photo \u00a9 Colin Andrews, colinandrews.net</p>` +
+      quote("“…made the previous night, by three people, in about two and three-quarters hours”", "Rod Dickinson, to researcher Michael Lindemann") +
+      note("Radford: “there exists no photographs or video of it being made.”"),
+      src: ["si22", "andrewsJulia"], det: detList([D[2].points[1]]) + `<h5 class="sd-h">Proof status</h5><p class="sd-p">${esc(jl.how)}</p>` });
+    add({ ch: "Julia Set", top: pfBadge("n"), head: "Claim vs window", body: vs({ big: "≈ 2¾ h", small: "claimed, 3 people, from about 2:45 am" }, { big: "45 min", small: "window “in full daylight” — Colin Andrews" }) +
       line("Taken at face value, the claimed build ends around 5:30 am — after that day’s 5:01 am sunrise."),
       src: ["si22", "andrewsJulia", "tadSalisbury"], det: detList(jr.build.concat(jr.window)) });
-    add({ ch: "Build time", top: tag("u"), head: "Milk Hill: 409 circles", body: big("≈ 30 s", "per circle — Circlemakers’ figure, for about four hours") +
-      quote("“…not even allowing any time for the surveying”", "Circlemakers, on Milk Hill (unclaimed)") + note("John Vidal’s guess: about 6 people, about 5 hours."),
-      src: ["cmTotc01", "vidal"], det: detList(mr.build) });
-    add({ ch: "Build time", top: tag("u"), head: "Milk Hill: the night", body: bul([
-        "Full night 11:06 pm–3:18 am (4 h 12 m); civil darkness 7 h 54 m",
-        "Heavy rain, but “no evidence of any mud on the stems” — Stuart Dike",
-        "John Hunt camped there: “I do not believe that the large formation was there” — though he “would not like to swear” to it"]),
-      src: ["tadSwindon", "ccc01"], det: detList(mr.window) });
+    const mh = item("2001-08-12-milk-hill-galaxy-spiral");
+    add({ ch: "Julia Set", top: tag("u"), head: "Milk Hill: 409 circles vs the dark", body: `<div class="sl-media">${photoBtn(mh, "Milk Hill 2001, aerial")}</div>` +
+      vs({ big: "≈ 30 s", small: "per circle — Circlemakers’ own sum", c: "c" }, { big: "4 h 12 m", small: "full darkness that night (Swindon)", c: "n" }) + note("No one has claimed it."),
+      src: ["cmTotc01", "tadSwindon", "ccc01"], det: detList(mr.build.concat(mr.window)) });
 
-    /* ——— Mess-ups ——— */
-    add({ ch: "Mess-ups", head: "Where are the mistakes?", body: bul([
-        "Enigma #21: 2000 was “the year that we started to see numerous errors in construction”",
-        "John Vidal on Milk Hill 2001: “quite well made - though there is evidence of sloppiness”",
-        "ICCRA, Wisconsin 2005: serrated edges, broken stalks, footprints, post holes",
-        "Rod Dickinson: the Julia Set’s central circle, “a little out of place”, was a work area"]) + note("Next: six mess-ups, one per slide."),
-      src: ["enigma21", "vidal", "iccra", "si22"], det: detList(MI.errors) });
-    const n = K.messups.length;
+    /* ——— Mess-ups (with photos) ——— */
     const wo = pr("Seven-pointed star, West Overton");
-    K.messups.forEach((m, i) => {
+    const ms = K.messups.filter((m) => !m.big);
+    ms.forEach((m, i) => {
       const d = m.id ? item(m.id) : null;
-      const vis = m.big ? big(m.big, m.bigSub) + pvBtn(wo.pv[0], true)
-        : d ? `<div class="sl-media">${photoBtn(d, m.place + " " + m.date)}</div>`
-        : ext(m.img, m.alt, m.link);
-      const isWO = /West Overton/.test(m.place);
-      add({ ch: "Mess-ups", cls: "sl-mess", top: tag(`Mess-up ${i + 1} of ${n}`) + (isWO ? pfBadge("y", "court") : ""), head: m.head,
+      const vis = d ? `<div class="sl-media">${photoBtn(d, m.place + " " + m.date)}</div>` : ext(m.img, m.alt, m.link);
+      add({ ch: "Mess-ups", cls: "sl-mess", top: tag(`Mess-up ${i + 1} of ${ms.length}`), head: m.head,
         body: `<p class="sl-place">${esc(m.place)} \u00b7 ${esc(m.date)}</p>${vis}${m.credit ? `<p class="sl-credit">${esc(m.credit)}</p>` : ""}` + quote(m.quote, m.who),
-        src: m.src, det: isWO ? `<p class="sd-p">${esc(wo.how)}</p>` + pvDet(wo) + `<p class="sd-p">${esc(m.noPhoto)}</p>` : "" });
+        src: m.src, det: i === 0 ? detList(MI.errors) : "" });
     });
-
-    /* ——— Other side ——— */
-    const bc2 = item(K.counter.id);
-    add({ ch: "The other side", top: tag("Counterpoint"), head: "Praised as precise", body: `<div class="sl-media">${photoBtn(bc2, "Barbury Castle 2008, aerial")}</div>` + quote(K.counter.quote, K.counter.who),
-      src: K.counter.src, det: detList(MI.noErrors) });
-    add({ ch: "The other side", head: "No mess-ups, they say", body: bul([
-        "Colin Andrews on the Julia Set: “awe inspiring, not only in symmetry and precision”",
-        "Astrophysicist Mike Reed on Barbury Castle: “The tenth digit has even been correctly rounded up.”",
-        "Stuart Dike on Milk Hill: no mud on the stems after heavy rain",
-        "Researchers argue stalks are bent, not broken, with no footprints (as summarised by CSICOP)"]),
-      src: ["andrewsJulia", "mail08", "ccc01", "csicop"], det: detList(MI.noErrors) });
 
     /* ——— Proof ——— */
     const cnt = { y: 0, p: 0, n: 0 };
-    C.proof.forEach((r) => cnt[r.s]++);
-    const nfRows = C.proof.filter((r) => r.nf), noRows = C.proof.filter((r) => r.s === "n" && !r.nf);
-    const withPv = C.proof.filter((r) => r.pv && r.s === "y").concat(C.proof.filter((r) => r.pv && r.s === "p"));
+    P.forEach((r) => cnt[r.s]++);
     add({ ch: "Proof", head: "Claims with proof vs claim only", body: `<div class="sl-pfcount">
         <div class="pfc y"><b>${cnt.y}</b><span>Proof shown</span></div>
         <div class="pfc p"><b>${cnt.p}</b><span>Partial</span></div>
         <div class="pfc n"><b>${cnt.n}</b><span>Claim only</span></div></div>` +
-      line(`${C.proof.length} claims. Proof means the evidence itself — video, build photos, a court report — linked here.`) +
-      note(`Of the ${cnt.n} claim-only: ${nfRows.length} had proof said to exist that we couldn’t find online; the other ${noRows.length} have no published proof.`) +
+      line(`${P.length} claims with a photo or video of the formation. Proof means the evidence itself — video or build photos — linked here.`) +
+      note("Also: West Overton, 2000 — Matthew Williams was fined £100 after admitting a seven-pointed star (court reports; no formation photo found).") +
       `<button type="button" class="sl-more" data-sheet="proof">Open the full proof table</button>`,
-      det: `<p class="sd-p">${esc(C.proofIntro)}</p><p class="sd-p">${esc(C.proofNote)}</p>`, detKeys: ["vidal"] });
-    const listStart = S.length + 2;
-    const half = Math.ceil(withPv.length / 2);
-    [withPv.slice(0, half), withPv.slice(half)].forEach((part, h) => add({ ch: "Proof", top: h ? pfBadge("p") + pfBadge("y") : pfBadge("y"), head: `The proof, one by one (${h + 1}/2)`,
-      body: `<ul class="sl-pfl compact pv-list">${part.map((r, k) => `<li><button type="button" data-go="${listStart + h * half + k}"><b>${esc(r.what)}</b><span>${r.s === "p" ? "Partial \u00b7 " : ""}${esc(r.pv.map(pvShort).filter((x, j, a) => a.indexOf(x) === j).join(" + "))} \u203a</span></button></li>`).join("")}</ul>` + note("Tap one to jump to its proof."),
-      det: `<ul class="sd-list">${part.map((r) => `<li><p><b>${esc(r.what)}</b> (${esc(r.year)}) — ${esc(r.how)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul>` }));
-    withPv.forEach((r) => {
-      const v = r.pv[0], v2 = r.pv[1];
-      add({ ch: "Proof", cls: "sl-pv", top: pfOf(r), head: r.what,
-        body: `<p class="sl-place">${esc(r.who)} \u00b7 ${esc(r.year)}</p>` +
-          (v.yt ? pvEmbed(v) : pvBtn(v)) +
-          `<p class="pv-shows"><b>What it shows:</b> ${esc(v.shows)}</p>` +
-          (v.yt ? `<a class="sl-link" href="${esc(ytUrl(v.yt))}" target="_blank" rel="noopener">Open on YouTube \u2197</a>` : "") +
-          (v2 ? pvBtn(v2, true) : "") +
-          (r.s === "p" ? `<p class="sl-note"><b>Why partial:</b> ${esc(r.how)}</p>` : ""),
-        src: r.src, det: `<p class="sd-p">${esc(r.how)}</p>` + pvDet(r) });
-    });
-    add({ ch: "Proof", top: pfBadge("n", "", "short"), head: "Said to exist, not found", body: `<ul class="sl-pfl compact tight">${nfRows.map((r) => `<li><b>${esc(r.what)} <span>\u00b7 ${esc(r.year)}</span></b></li>`).join("")}</ul>` + note("Tap Details for what’s missing from each."),
-      src: nfRows.flatMap((r) => r.src), det: `<ul class="sd-list">${nfRows.map((r) => `<li><p><b>${esc(r.what)}</b> (${esc(r.year)}) — ${esc(r.how)}</p><p class="sd-p"><b>Missing:</b> ${esc(r.missing)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul>` });
-    add({ ch: "Proof", top: pfBadge("n"), head: "Claim only", body: `<ul class="sl-pfl">${noRows.map((r) => `<li><b>${esc(r.what)}</b><span>${esc(r.who)} \u00b7 ${esc(r.year)}</span><span class="pv-miss">Missing: ${esc(r.missing)}</span></li>`).join("")}</ul>`,
-      src: noRows.flatMap((r) => r.src), det: `<ul class="sd-list">${noRows.map((r) => `<li><p><b>${esc(r.what)}</b> — ${esc(r.how)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul>` });
-
-    /* ——— Each year ——— */
-    add({ ch: "Each year", head: K.years.head, body: `<div class="st-seg" role="group" aria-label="Count">${BY.series.map((sr) => `<button type="button" data-series="${sr.key}" aria-pressed="${sr.key === claimsSeries}">${sr.key === "world" ? "Worldwide" : "England"}</button>`).join("")}</div>
-      <div class="st-chart" id="stChart"></div><p class="st-readout" id="stReadout"></p>` + line(K.years.line),
-      src: BY.series.flatMap((s) => s.src), det: `<p class="sd-p">${esc(BY.intro)}</p><p class="sd-p">${esc(BY.chartNote.replace(/ The right-hand number.*$/, ""))}</p>` + BY.series.map((s) => `<p class="sd-p">${esc(s.label)}</p>`).join("") });
-    add({ ch: "Each year", head: "Other published totals", body: bul([
-        "1980–83: 3, 3, 5 and 22 circles in Britain; 1987–89: 73, 113 and “over 250” — Terence Meaden",
-        "1990: “700 circles in Britain” — Jenny Randles",
-        "1991: about 800 — Rupert Sheldrake"]) + note("These count individual circles, not whole formations."),
-      src: ["si92", "sheldrake"], det: detList(BY.points.slice(0, 3)) });
-    add({ ch: "Each year", head: "Other totals, UK", body: bul([
-        "204 UK formations in 1992; a peak of 148 in 1999 — Paul Vigay",
-        "“around the 100 per year mark” for 1996–2003 — Vigay",
-        "Now “an average of 30” a year in the UK, ~80% in Wiltshire — BBC Travel, 2021",
-        "For scale: Doug & Dave said 25 to 30 a season (Time, 1991)"]),
-      src: ["vigayDist", "bbc21", "time91"], det: detList(BY.points.slice(3)) });
+      det: `<p class="sd-p">${esc(C.proofIntro)}</p><p class="sd-p">${esc(wo.how)}</p>` + pvDet(wo) + `<p class="sd-p">${esc(C.proofNote)}</p>`, detKeys: ["gh00", "guardian00"] });
 
     /* ——— End ——— */
     add({ ch: "End", cls: "sl-title", top: '<div class="sl-ring big" aria-hidden="true"><span></span></div>', head: K.close.head,
-      body: line("Every slide names who said what — and whether they showed proof. Tap “Details” or “Source” to check.") + `<button type="button" class="sl-go" data-go="0">\u21ba ${esc(K.close.again)}</button>` });
+      body: line("Every slide names who said what — and whether they showed proof. Then see the unclaimed side: the UFOs tab.") + `<button type="button" class="sl-go" data-go="0">\u21ba ${esc(K.close.again)}</button>` });
 
     slideCount = S.length;
-    const sheetBuilds = `<ul class="sd-list">${T.builds.map((b) => { const p = bProof(b); return `<li><p><b>${esc(b.name)}</b> \u00b7 ${esc(b.year)} \u00b7 ${esc(b.where)}</p>
-        <p class="sd-row">${p ? pfOf(p) : ""}</p>
-        <dl class="sd-dl"><dt>Time</dt><dd>${esc(b.time)}</dd><dt>Team</dt><dd>${esc(b.team)}</dd><dt>Size</dt><dd>${esc(b.size)}</dd><dt>Light</dt><dd>${esc(b.light)}</dd>${p ? `<dt>Proof</dt><dd>${esc(p.how)}</dd>` : ""}</dl>
-        <p class="sd-p">${esc(b.note)}</p><p class="sd-src">${srcLinks(b.src)}</p></li>`; }).join("")}</ul><p class="sd-p">${esc(T.note)}</p>`;
-    const sheetProof = `<p class="sd-p">${esc(C.proofIntro)}</p><p class="sd-p"><b>${cnt.y}</b> proof shown \u00b7 <b>${cnt.p}</b> partial \u00b7 <b>${cnt.n}</b> claim only (${nfRows.length} of them: proof said to exist but not found online). Links checked 9 Oct 2026.</p>
-      <table class="pt"><thead><tr><th>Claim</th><th>Status</th><th>The proof itself</th><th>What it shows</th><th>Source</th></tr></thead><tbody>${C.proof.map((r) => `<tr class="pt-${r.s}">
+    const sheetProof = `<p class="sd-p">${esc(C.proofIntro)}</p><p class="sd-p"><b>${cnt.y}</b> proof shown \u00b7 <b>${cnt.p}</b> partial \u00b7 <b>${cnt.n}</b> claim only. Links checked 10 Oct 2026.</p>
+      <table class="pt"><thead><tr><th>Claim</th><th>Status</th><th>The proof itself</th><th>What it shows</th><th>Source</th></tr></thead><tbody>${P.map((r) => `<tr class="pt-${r.s}">
         <td data-l="Claim"><b>${esc(r.what)}</b><small>${esc(r.who)} \u00b7 ${esc(r.year)}</small></td>
         <td data-l="Status">${pfOf(r)}</td>
         <td data-l="The proof itself">${r.pv ? r.pv.map((v) => pvBtn(v, true)).join("") : `<span class="pt-none">None online</span>`}</td>
         <td data-l="What it shows">${r.pv ? r.pv.map((v) => `<p>${esc(v.shows)}</p>`).join("") + (r.s === "p" ? `<p><em>Why partial:</em> ${esc(r.how)}</p>` : "") : `<p><em>Missing:</em> ${esc(r.missing || "")}</p><p>${esc(r.how)}</p>`}</td>
         <td data-l="Source">${srcLinks(r.src)}</td></tr>`).join("")}</tbody></table><p class="sd-p">${esc(C.proofNote)}</p>`;
-    slideDet.builds = { title: `All ${T.builds.length} reported build times`, html: sheetBuilds };
-    slideDet.proof = { title: `Proof table — all ${C.proof.length} claims`, html: sheetProof };
+    slideDet.proof = { title: `Proof table — all ${P.length} claims`, html: sheetProof };
 
     claimsBody.innerHTML = `<div class="deck" id="deck" aria-roledescription="carousel" aria-label="Who made them? slides" tabindex="0">
         <div class="deck-prog"><span id="deckProg"></span></div>
@@ -626,7 +473,7 @@
         </div>
       </div>`;
     claimsBody._chapters = chapters;
-    document.getElementById("slToc").outerHTML = `<ol class="sl-toc">${chapters.slice(1, -1).map((c) => `<li><button type="button" data-go="${c.start}">${esc(c.name)}</button></li>`).join("")}</ol>`;
+    const tocEl = document.getElementById("slToc"); if (tocEl) tocEl.outerHTML = `<ol class="sl-toc">${chapters.slice(1, -1).map((c) => `<li><button type="button" data-go="${c.start}">${esc(c.name)}</button></li>`).join("")}</ol>`;
     claimsBody.querySelectorAll("img.ext, .pv-play img").forEach((im) => {
       const fail = () => im.classList.add("failed");
       im.addEventListener("error", fail);
@@ -805,6 +652,179 @@
     else map.setView([51.4, -1.85], 9);
   }
 
+  /* ——— v10: "The case for UFOs at the hotspots" story cards (Why here?, UFOs, Evidence) ——— */
+  const X = () => window.CC_EXTRA || null;
+  const quartzTag = new Map();
+  function xLinks(keys) {
+    const S = (X() || {}).S || {};
+    return (keys || []).filter((k) => S[k]).map((k) => `<a href="${esc(S[k][1])}" target="_blank" rel="noopener">${esc(S[k][0])}</a>`).join(" \u00b7 ");
+  }
+  function extImg(url, alt, link, credit) {
+    return `<figure class="st-media"><a class="st-ext" href="${esc(link)}" target="_blank" rel="noopener">
+      <span class="sl-fb"><b>Photo loads from source — needs signal</b><small>Tap to open the source page \u2197</small></span>
+      <img class="ext" src="${esc(url)}" alt="${esc(alt)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add('failed')" /></a>
+      <figcaption>${esc(credit)}</figcaption></figure>`;
+  }
+  function ytCard(id, label) {
+    return `<div class="pv-yt st-yt"><button type="button" class="pv-play" data-yt="${esc(id)}" data-title="${esc(label)}" aria-label="Load video: ${esc(label)}">
+      <span class="pv-fb">Video preview needs signal</span><img src="https://i.ytimg.com/vi/${esc(id)}/hqdefault.jpg" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add('failed')" />
+      <span class="pv-tri" aria-hidden="true"></span><span class="pv-cap">\u25b6 Tap to play \u00b7 ${esc(label)}</span></button></div>
+      <a class="st-link" href="https://www.youtube.com/watch?v=${esc(id)}" target="_blank" rel="noopener">Open on YouTube \u2197</a>`;
+  }
+  function itemBtn(id) {
+    const d = allData.find((x) => x.id === id);
+    if (!d) return "";
+    return `<figure class="st-media"><button type="button" class="st-item" data-id="${esc(d.id)}" aria-label="Open ${esc(d.name || "")}"><img src="${esc(d.imageUrl)}" alt="${esc(d.name || "")}" loading="lazy" /></button>
+      <figcaption>${esc(d.name || "")} \u00b7 ${esc(whenText(d))} \u00b7 Photo: ${esc(d.photoCredit || "")}</figcaption></figure>`;
+  }
+  function storyCard(c, idx) {
+    const S = X().S;
+    let media = "";
+    if (c.media && c.media.img) media = `<figure class="st-media"><img src="${esc(c.media.img)}" alt="${esc(c.media.alt)}" loading="lazy" /><figcaption>${S[c.media.credit] ? xLinks([c.media.credit]) : esc(c.media.credit)}</figcaption></figure>`;
+    else if (c.media && c.media.ext) media = extImg(c.media.ext, c.media.alt, c.media.link, c.media.credit);
+    else if (c.media && c.media.yt) media = ytCard(c.media.yt, c.media.label);
+    else if (c.media && c.media.link) media = `<a class="st-watch" href="${esc(c.media.link)}" target="_blank" rel="noopener">\u25b6 ${esc(c.media.label)} \u2197</a>${c.media.note ? `<p class="st-small">${esc(c.media.note)}</p>` : ""}`;
+    if (c.item) media += itemBtn(c.item);
+    if (c.item2) media += itemBtn(c.item2);
+    let stat = "";
+    if (c.stat === "hotspots") {
+      const top = hs.hotspots.filter((h) => h.count > 1).slice(0, 3);
+      stat = `<ol class="st-top">${top.map((h) => `<li><button type="button" data-place="${esc(h.id)}"><b>${h.count}</b><span>${esc(areaLabel(h))}</span></button></li>`).join("")}</ol>
+        <p class="st-small">Formations at the top repeat sites in this app’s gallery (sites within ~${hs.radiusKm} km grouped). Tap to see them.</p>`;
+    }
+    const facts = (c.facts || []).map(([t, ...k]) => `<li>${esc(t)} <span class="st-src">${xLinks(k)}</span></li>`).join("");
+    const q = c.quote ? `<blockquote class="st-q"><p>${esc(c.quote[0])}</p><cite>\u2014 ${esc(c.quote[1])}</cite></blockquote>` : "";
+    const note = c.note ? `<p class="st-belief"><b>Belief, not measurement.</b> ${esc(c.note.replace(/^Belief, not measured science: /, ""))} <span class="st-src">${xLinks(c.noteSrc)}</span></p>` : "";
+    const go = c.go ? `<button type="button" class="st-go" data-view="${esc(c.go[0])}">${esc(c.go[1])}</button>` : "";
+    const other = c.other && c.other.length ? `<details class="st-other"><summary>The other side</summary><ul>${c.other.map(([t, ...k]) => `<li>${esc(t)} <span class="st-src">${xLinks(k)}</span></li>`).join("")}</ul></details>` : "";
+    return `<article class="st-card" id="st-${idx}">
+      <p class="st-kick">${esc(c.kicker || "")}</p><h3>${esc(c.title)}</h3>${c.place ? `<p class="st-place">${esc(c.place)}</p>` : ""}
+      ${media}${stat}${q}${facts ? `<ul class="st-facts">${facts}</ul>` : ""}${note}${go}${other}</article>`;
+  }
+  function quartzCard() {
+    const Q = X().QUARTZ;
+    const thumbs = Q.tagged.map(([id, km, site]) => {
+      const d = allData.find((x) => x.id === id);
+      return d ? `<button type="button" class="hs-thumb st-item" data-id="${esc(d.id)}" aria-label="${esc((d.name || "") + ", " + km + " km from " + site)}"><img src="${esc(d.imageUrl)}" alt="" loading="lazy" /><span>${esc(String(d.year || ""))} \u00b7 ${km} km</span></button>` : "";
+    }).join("");
+    return `<article class="st-card st-quartz" id="st-quartz">
+      <p class="st-kick">Quartz ground</p><h3>${Q.tagged.length} formations on sarsen ground</h3>
+      <p class="st-lead">Formations in this gallery within ${Q.ruleKm} km of a documented field of sarsens — quartz sandstone boulders.</p>
+      <div class="st-btns"><button type="button" class="st-go" data-qmap="1">Show quartz ground on the map</button><button type="button" class="st-go alt" data-qgal="1">See them in the Gallery</button></div>
+      <div class="hs-strip st-strip">${thumbs}</div>
+      <ul class="st-facts">${Q.sites.map((s) => `<li><b>${esc(s.name)}</b> — ${esc(s.why)} <span class="st-src">${xLinks(s.src)}</span></li>`).join("")}</ul>
+      <p class="st-small">${esc(Q.kabNote)}</p>
+      <details class="st-other"><summary>How we tagged them</summary><ul><li>${esc(Q.rule)}</li><li>Coordinates in this gallery are approximate (place-name level), so distances are approximate too.</li></ul></details></article>`;
+  }
+  function storyHead(sec, others) {
+    return `<header class="st-head"><p class="st-case">The case for UFOs at the hotspots</p><h2>${esc(sec.title)}</h2><p class="st-sub">${esc(sec.sub)}</p><p class="st-lead">${esc(sec.intro)}</p>
+      <nav class="st-chips" aria-label="The case">${others.map(([v, l]) => `<button type="button" data-view="${v}"${v === currentView ? ' aria-current="true"' : ""}>${esc(l)}</button>`).join("")}</nav></header>`;
+  }
+  const CASE_NAV = [["hotspots", "1 \u00b7 Why here?"], ["ufo", "2 \u00b7 Lights"], ["evidence", "3 \u00b7 Instruments"]];
+  function renderStory(el, key) {
+    if (!X()) { el.innerHTML = '<p class="map-off">Content unavailable.</p>'; return; }
+    if (el.dataset.ready) return;
+    const sec = X()[key];
+    let cards = sec.cards.map((c, i) => storyCard(c, key + i));
+    if (key === "WHY") cards.splice(6, 0, quartzCard());
+    el.innerHTML = storyHead(sec, CASE_NAV) + cards.join("");
+    el.dataset.ready = "1";
+  }
+  function bindStory(el) {
+    el.addEventListener("click", (e) => {
+      const pl = e.target.closest(".pv-play");
+      if (pl) {
+        pl.parentElement.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(pl.dataset.yt)}?autoplay=1&rel=0&playsinline=1" title="${esc(pl.dataset.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+        return;
+      }
+      const it = e.target.closest(".st-item");
+      if (it) { const d = allData.find((x) => x.id === it.dataset.id); if (d) openDetail(d); return; }
+      const v = e.target.closest("[data-view]");
+      if (v) { showView(v.dataset.view); window.scrollTo(0, 0); return; }
+      const pc = e.target.closest("[data-place]");
+      if (pc) { filterToPlace(pc.dataset.place); return; }
+      if (e.target.closest("[data-qmap]")) { showQuartzLayer(); return; }
+      if (e.target.closest("[data-qgal]")) {
+        placeFilterId = null; yearFilter.value = "all"; meaningFilter.checked = false; anomalyFilter.checked = false; search.value = "";
+        quartzFilter.checked = true; showView("gallery"); render(); window.scrollTo(0, 0);
+      }
+    });
+  }
+  let quartzLayer = null;
+  function showQuartzLayer() {
+    if (!map || typeof L === "undefined") return;
+    if (!quartzLayer) {
+      quartzLayer = L.featureGroup();
+      const Q = X().QUARTZ;
+      Q.sites.forEach((s) => {
+        L.circle([s.lat, s.lon], { radius: Q.ruleKm * 1000, color: "#b48cff", weight: 1, fillColor: "#b48cff", fillOpacity: 0.12 }).addTo(quartzLayer);
+        L.circleMarker([s.lat, s.lon], { radius: 6, color: "#e6d9ff", weight: 2, fillColor: "#b48cff", fillOpacity: 0.9 })
+          .bindPopup(`<b>${esc(s.name)}</b><br>${esc(s.why)}`).addTo(quartzLayer);
+      });
+    }
+    if (!map.hasLayer(quartzLayer)) quartzLayer.addTo(map);
+    hotspotMapEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => { map.invalidateSize(); map.fitBounds(quartzLayer.getBounds(), { padding: [20, 20], maxZoom: 12 }); }, 350);
+    mapNote.textContent = "Purple = quartz ground: documented sarsen sites with a 3 km ring. Gold = formation sites.";
+  }
+
+  /* ——— v10: Kab tab ——— */
+  let kab = null, kabFilter = "all";
+  const kabBody = document.getElementById("kabBody");
+  const kabView = document.getElementById("kab");
+  const fmtDate = (s) => { if (!s) return ""; const [y, m, d] = s.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }); };
+  function firstLine(t) { return (t || "").split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 2).join(" \u00b7 ").replace(/https?:\/\/\S+/g, "").trim(); }
+  function linkify(t) { return esc(t).replace(/https?:\/\/[^\s<]+/g, (u) => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`); }
+  function renderKab() {
+    if (!kab) {
+      kabBody.innerHTML = '<p class="map-off">Loading Kab’s posts…</p>';
+      fetch("kab.json").then((r) => r.json()).then((d) => { kab = d; renderKab(); })
+        .catch(() => { kabBody.innerHTML = '<p class="map-off">Couldn’t load Kab’s posts.</p>'; });
+      return;
+    }
+    const all = kab.items;
+    const list = all.filter((k) => kabFilter === "all" || (kabFilter === "photo" ? k.kind === "photo" : kabFilter === "quartz" ? k.quartz : kabFilter === "uk" ? /Wiltshire|Hampshire|England|UK|Somerset|Dorset|Devon|Oxfordshire/.test(k.place || "") : true));
+    const n = (f) => all.filter(f).length;
+    kabBody.innerHTML = `<header class="kab-head"><h2>Kab’s crop circles</h2>
+      <p class="evidence-lede">${all.length} crop-circle posts from Kabamur Taygeta’s public Telegram channel, best photos first. Captions are Kab’s own words, verbatim. Dates are when Kab posted (CT); places only where Kab gave one.</p>
+      <div class="kab-chips" role="group" aria-label="Filter">
+        ${[["all", `All ${all.length}`], ["photo", `Photos ${n((k) => k.kind === "photo")}`], ["uk", `England ${n((k) => /Wiltshire|Hampshire|England|UK|Somerset|Dorset|Devon|Oxfordshire/.test(k.place || ""))}`], ["quartz", `Quartz posts ${n((k) => k.quartz)}`]].map(([f, l]) => `<button type="button" data-kf="${f}" aria-pressed="${f === kabFilter}">${esc(l)}</button>`).join("")}
+      </div></header>
+      <div class="gallery kab-grid">${list.map((k) => `<article class="card kab-card" tabindex="0" data-kab="${k.id}">
+        <div class="card-photo"><img src="${esc(k.images[0][0])}" alt="Crop circle posted by Kab, ${esc(fmtDate(k.posted))}" loading="lazy" width="${k.images[0][1]}" height="${k.images[0][2]}" /></div>
+        <div class="card-body"><h2>${esc(k.place || "Place not given")}</h2><p class="card-meta">Posted ${esc(fmtDate(k.posted))}</p>
+        <p class="kab-cap">${esc(firstLine(k.caption))}</p>
+        <div class="badges">${k.quartz ? '<span class="badge quartz">Quartz claim</span>' : ""}${k.kind !== "photo" ? '<span class="badge still">Video still</span>' : ""}${k.images.length > 1 ? `<span class="badge">${k.images.length} photos</span>` : ""}</div></div></article>`).join("")}</div>
+      <section class="kab-quartz"><h2>Kab on quartz</h2><p class="evidence-lede">Every post in Kab’s channel crawl (4,924 messages) that links crop circles to quartz or crystals — Kab’s claims, verbatim.</p>
+        ${kab.quartzPosts.map((q) => `<details class="st-other kab-q"><summary><b>${esc(fmtDate(q.posted) || "Date not shown")}</b> \u00b7 ${esc(firstLine(q.caption).slice(0, 90))}…</summary><p class="kab-full">${linkify(q.caption)}</p><a class="st-link" href="${esc(q.url)}" target="_blank" rel="noopener">Open on Telegram \u2197</a>${q.inTab ? ' <span class="st-small">(also in the grid above)</span>' : ""}</details>`).join("")}
+      </section>`;
+  }
+  function openKab(id) {
+    const k = kab && kab.items.find((x) => x.id === id);
+    if (!k) return;
+    const imgs = k.images.map(([u, w, h]) => `<div class="detail-photo-wrap"><img class="detail-photo" src="${esc(u)}" alt="Crop circle posted by Kab" width="${w}" height="${h}" loading="lazy" /></div>`).join("");
+    detail.innerHTML = `${imgs}<div class="detail-body">
+      <h2 id="detailTitle">${esc(k.place || "Place not given by Kab")}</h2>
+      <p class="detail-meta">Posted ${esc(fmtDate(k.posted))} (CT) \u00b7 Kabamur Taygeta, Telegram</p>
+      <div class="section"><h3>Kab’s caption (verbatim)</h3><p class="kab-full">${linkify(k.caption)}</p></div>
+      <div class="section"><a class="st-watch" href="${esc(k.url)}" target="_blank" rel="noopener">Open the Telegram post \u2197</a>
+      ${k.yt ? `<p class="src">Image: still from the YouTube video Kab linked \u2014 <a href="https://www.youtube.com/watch?v=${esc(k.yt)}" target="_blank" rel="noopener">watch on YouTube</a></p>` : k.kind === "still" ? '<p class="src">Image: still from the video in Kab’s post (low resolution).</p>' : '<p class="src">Photo as posted by Kab on Telegram; original photographers are not always named.</p>'}</div></div>`;
+    overlay.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+    overlay.scrollTop = 0;
+  }
+  kabBody.addEventListener("click", (e) => {
+    const f = e.target.closest("[data-kf]");
+    if (f) { kabFilter = f.dataset.kf; renderKab(); return; }
+    const c = e.target.closest("[data-kab]");
+    if (c) openKab(+c.dataset.kab);
+  });
+  kabBody.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const c = e.target.closest("[data-kab]");
+    if (c) { e.preventDefault(); openKab(+c.dataset.kab); }
+  });
+
   function filterToPlace(id) {
     placeFilterId = id;
     yearFilter.value = "all";
@@ -829,12 +849,17 @@
     evidence.classList.toggle("hidden", name !== "evidence");
     hotspotsView.classList.toggle("hidden", name !== "hotspots");
     claimsView.classList.toggle("hidden", name !== "claims");
+    ufoView.classList.toggle("hidden", name !== "ufo");
+    kabView.classList.toggle("hidden", name !== "kab");
     document.body.classList.toggle("deck-mode", name === "claims");
     if (name === "claims") { window.scrollTo(0, 0); renderClaims(); }
     const ph = placeFilterId && hs.hotspots.find((h) => h.id === placeFilterId);
     placeChip.classList.toggle("hidden", !(isG && ph));
-    if (name === "evidence") { renderOrbCard(); renderEvidence(); }
-    if (name === "hotspots") renderHotspots();
+    if (name === "evidence") { renderStory(evBody, "EV"); renderEvidence(); }
+    if (name === "hotspots") { renderHotspots(); renderStory(whyHere, "WHY"); }
+    if (name === "ufo") renderStory(ufoBody, "UFO");
+    if (name === "kab") renderKab();
+    [whyHere, ufoBody, evBody].forEach((el) => el.querySelectorAll(".st-chips [data-view]").forEach((b) => b.toggleAttribute("aria-current", b.dataset.view === name)));
     if (history.replaceState) history.replaceState(null, "", "#" + name);
   }
 
@@ -930,6 +955,8 @@
   yearFilter.addEventListener("change", render);
   meaningFilter.addEventListener("change", render);
   anomalyFilter.addEventListener("change", render);
+  quartzFilter.addEventListener("change", render);
+  [whyHere, ufoBody, evBody].forEach(bindStory);
   search.addEventListener("input", render);
 
   document.querySelectorAll(".nav-link").forEach((a) => {
@@ -956,8 +983,10 @@
         opt.textContent = String(y);
         yearFilter.appendChild(opt);
       });
+      if (window.CC_EXTRA) window.CC_EXTRA.QUARTZ.tagged.forEach(([id, km, site]) => quartzTag.set(id, { km, site }));
       render();
-      if (location.hash === "#evidence") showView("evidence");
+      if (["#ufo", "#kab"].includes(location.hash)) showView(location.hash.slice(1));
+      else if (location.hash === "#evidence") showView("evidence");
       else if (location.hash === "#hotspots") showView("hotspots");
       else if (location.hash === "#claims") showView("claims");
     })
