@@ -158,7 +158,7 @@
       { kicker: "Witness \u00b7 1966", title: "Tully: a saucer rose from the lagoon", place: "Horseshoe Lagoon, Tully, Queensland \u00b7 19 Jan 1966",
         media: { ext: "https://uforq.org/wp-content/uploads/2023/10/tully-saucer-nest-1966.jpg?w=480", alt: "1966 photo of the swirled reeds at Tully", credit: "Photo via UFO Research Queensland", link: "https://uforq.org/the-tully-saucer-nest/" },
         facts: [["Banana farmer George Pedley heard a hissing, then saw “a large saucer shaped object rose from the lagoon”, about 25 feet across.", "uforqTully"],
-                ["Where it rose, he found a swirled circle of flattened reeds — the ‘saucer nest’, often called one of the earliest crop-circle-type reports.", "uforqTully"],
+                ["Where it rose he found “a large circular area of slowly rotating water that was completely devoid of reeds”; the reeds there were “radially distributed in a noticably anticlockwise manner” — the ‘nest’, as it came to be called.", "uforqTully"],
                 ["He said it rose to tree-top height, tilted, then “in a fantastic burst of speed” was gone.", "uforqTully"]] },
       { kicker: "Video \u00b7 1994", title: "Army helicopters and a flashing light", place: "East Field, Alton Barnes, Wiltshire \u00b7 1994",
         facts: [["Footage near the ‘CBS Eye’ formation, from the ‘Crop Circles: Quest for Truth’ DVD extra (2002), shows military helicopters hovering low while a flashing white light shows in the field.", "metabunkHeli"],
