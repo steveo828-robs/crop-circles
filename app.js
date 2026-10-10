@@ -275,119 +275,170 @@
       `<a href="${esc(S[k][1])}" target="_blank" rel="noopener">${esc(S[k][0])}</a>`).join(" \u00b7 ");
   }
 
-  function pointList(items, cls) {
-    return `<ul class="cl-points${cls ? " " + cls : ""}">${items.map(([text, ...keys]) =>
-      `<li><p>${esc(text)}</p><p class="cl-src">${srcLinks(keys)}</p></li>`).join("")}</ul>`;
-  }
-
-  let claimsStep = 1;
   let claimsSeries = "world";
+  let slideIdx = 0;
+  let slideCount = 0;
 
   function renderClaims() {
-    if (claimsBody.dataset.ready) return;
+    if (claimsBody.dataset.ready) { sizeDeck(); return; }
     const C = window.CC_CLAIMS;
-    if (!C || !C.story) { claimsBody.innerHTML = '<p class="map-off">Claims content unavailable.</p>'; return; }
-    const ST = C.story;
-    document.getElementById("claimsLede").textContent = ST.intro;
-    const uniq = (a) => [...new Set(a)];
-    const keysOf = (items) => items.flatMap(([, ...k]) => k);
-    const tagC = '<span class="st-tag c">Claimed man-made</span>';
-    const tagU = '<span class="st-tag u">Reported unexplained</span>';
-    const sub = (title, html) => `<h5 class="st-sub">${esc(title)}</h5>${html}`;
-    const srcBlock = (html, keys) => `<details class="st-src"><summary>Sources &amp; more</summary><div class="st-src-body">${html}
-        <h5 class="st-sub">All sources</h5><ul class="st-srclist">${uniq(keys).map((k) => `<li>${srcLinks([k])}</li>`).join("")}</ul></div></details>`;
-    const ch = (n, d, visual, more, keys) => `
-      <article class="st-ch${n === claimsStep ? "" : " hidden"}" data-ch="${n}" aria-labelledby="st-h${n}">
-        <p class="st-count">Step ${n} of 6</p>
-        <h3 id="st-h${n}">${esc(d.head)}</h3>
-        <p class="st-take">${esc(d.take)}</p>
-        ${visual}
-        ${srcBlock(more, keys)}
-        <div class="st-nav">
-          ${n > 1 ? `<button type="button" class="st-btn ghost" data-step="${n - 1}">\u2190 Back</button>` : "<span></span>"}
-          ${n < 6 ? `<button type="button" class="st-btn" data-step="${n + 1}">Next \u2192</button>` : `<button type="button" class="st-btn ghost" data-step="1">Start again</button>`}
-        </div>
-      </article>`;
+    if (!C || !C.deck) { claimsBody.innerHTML = '<p class="map-off">Claims content unavailable.</p>'; return; }
+    const K = C.deck, T = C.timing;
+    const SR = window.CC_SOURCES || {};
+    const tag = (t) => t === "c" ? '<span class="sl-tag c">Claimed man-made</span>' : t === "u" ? '<span class="sl-tag u">Reported unexplained</span>' : t ? `<span class="sl-tag m">${esc(t)}</span>` : "";
+    const src = (keys) => {
+      const ks = [...new Set(keys)].filter((k) => SR[k]);
+      if (!ks.length) return "";
+      return `<p class="sl-src">Source: ${ks.map((k) => `<a href="${esc(SR[k][1])}" target="_blank" rel="noopener">${esc(SR[k][0])}</a>`).join(" \u00b7 ")}</p>`;
+    };
+    const slide = (cls, inner, foot) => `<section class="slide ${cls}" aria-roledescription="slide"><div class="sl-in">${inner}</div>${foot || ""}</section>`;
+    const item = (id) => allData.find((d) => d.id === id);
+    const photoBtn = (d, alt) => d ? `<button type="button" class="sl-photo" data-id="${esc(d.id)}" aria-label="Open ${esc(d.name)}"><img src="${esc(d.imageUrl)}" alt="${esc(alt || d.name)}" loading="lazy" /></button>` : "";
+    const S = [];
 
-    /* 1 */
-    const D = C.claimants;
-    const c1 = ST.ch1;
-    const v1 = `<div class="st-stack">${c1.people.map((p) => `
-        <div class="st-panel c">${tagC}<h4>${esc(p.name)}</h4><p>${esc(p.line)}</p></div>`).join("")}</div>`;
-    const G = C.gallery;
-    const m1 = sub("Doug & Dave", pointList(D[0].points.slice(0, 4))) +
-      sub("The other side", pointList(D[0].counter, "counter")) +
-      sub("Circlemakers", pointList(D[1].points.slice(0, 3))) +
-      sub("Other claims", pointList(D[2].points.slice(0, 2))) +
-      (G ? sub("Formations people said they made", `<ul class="st-links">${G.items.map((g) => `<li><b>${esc(g.title)}</b> (${esc(g.date)}) \u2014 ${esc(g.who)}. ${g.link ? `<a href="${esc(g.link)}" target="_blank" rel="noopener">${esc(g.linkLabel)} \u2197</a>` : srcLinks(g.src)}</li>`).join("")}</ul><p class="st-p">${esc(G.noPhotoNote)}</p>`) : "");
-    const k1 = c1.people.flatMap((p) => p.src).concat(keysOf(D[0].points.slice(0, 4)), keysOf(D[0].counter), keysOf(D[1].points.slice(0, 3)), keysOf(D[2].points.slice(0, 2)), G ? G.items.flatMap((g) => g.src) : []);
+    /* 1 title */
+    S.push(slide("sl-title", `<div class="sl-ring big" aria-hidden="true"><span></span></div>
+      <h3 class="sl-h">${esc(K.title.head)}</h3><p class="sl-line">${esc(K.title.line)}</p>
+      <button type="button" class="sl-go" data-go="1">${esc(K.title.hint)}</button>`));
 
-    /* 2 */
-    const c2 = ST.ch2;
-    const mh = allData.find((d) => d.id === c2.photoId);
-    const v2 = `<div class="st-pair">
-        <div class="st-half">${tagC}<div class="st-ring" aria-hidden="true"><span></span></div>
-          <h4>${esc(c2.ring.title)}</h4><p>${esc(c2.ring.quote)}</p></div>
-        <div class="st-half">${tagU}${mh ? `<button type="button" class="st-photo" data-id="${esc(mh.id)}"><img src="${esc(mh.imageUrl)}" alt="${esc(c2.photoTitle)}" loading="lazy" /></button>` : ""}
-          <h4>${esc(c2.photoTitle)}</h4><p>${esc(c2.photoLine)}</p></div>
-      </div>`;
-    const m2 = sub("More", `<ul class="st-links"><li>Doug & Dave called it “the hallmark basic ring they have done since 1978”. ${srcLinks(["today91"])}</li>
-        <li>Photos of Doug & Dave at work: <a href="https://www.smithsonianmag.com/arts-culture/crop-circles-the-art-of-the-hoax-2524283/" target="_blank" rel="noopener">Smithsonian \u2197</a></li>
-        <li>Milk Hill photo: ${esc(mh ? mh.photoCredit || "" : "")}. Tap it to open the gallery entry.</li></ul>`);
-    const k2 = c2.ring.src.concat(c2.photoSrc, ["smithsonian"]);
+    /* 2-3 claimants */
+    [K.doug, K.cm].forEach((d) => S.push(slide("", `${tag(d.tag)}<h3 class="sl-h">${esc(d.head)}</h3>
+      <div class="sl-big"><b>${esc(d.big)}</b><span>${esc(d.bigSub)}</span></div>
+      <p class="sl-line">${esc(d.line)}</p>`, src(d.src))));
 
-    /* 3 */
-    const c3 = ST.ch3, CP = C.compare, LY = C.lay;
-    const v3 = `<figure class="st-fig">${tagU}<img src="${esc(c3.img)}" alt="${esc(c3.caption)}" loading="lazy" /><figcaption>${esc(c3.caption)}</figcaption></figure>
-      <p class="st-missing">${tagC}<span>${esc(c3.missing)}</span></p>`;
-    const m3 = sub("What BLT Research reports", pointList(CP.plants.slice(0, 3))) +
-      sub("The other side", pointList(CP.plantCounter, "counter")) +
-      sub("Claimed man-made: where to look", pointList(LY.claimed, "counter"));
-    const k3 = keysOf(CP.plants.slice(0, 3)).concat(keysOf(CP.plantCounter), keysOf(LY.claimed), ["blt"]);
-
-    /* 4 */
-    const c4 = ST.ch4, T = C.timing;
-    const row = (b) => `<li><b>${esc(b.name)} <span class="st-yr">${esc(b.year)}</span></b><em>${esc(b.time)}${/not stated/i.test(b.light) ? "" : ` \u00b7 ${esc(b.light.toLowerCase())}`}</em><small>${srcLinks(b.src.slice(0, 1))}</small></li>`;
-    const top = c4.topIds.map((n) => T.builds.find((b) => b.name === n)).filter(Boolean);
-    const v4 = `<div class="st-pair stats">
-        <div class="st-stat c"><b>${esc(c4.statA.big)}</b><span>${esc(c4.statA.small)}</span></div>
-        <div class="st-stat u"><b>${esc(c4.statB.big)}</b><span>${esc(c4.statB.small)}</span></div>
+    /* 4 simple vs complex */
+    const mh = item("2001-08-12-milk-hill-galaxy-spiral");
+    S.push(slide("", `<h3 class="sl-h">${esc(K.simple.head)}</h3>
+      <div class="sl-split">
+        <figure>${tag("c")}<div class="sl-tile"><div class="sl-ring" aria-hidden="true"><span></span></div></div><figcaption>Doug &amp; Dave’s ring</figcaption></figure>
+        <figure>${tag("u")}<div class="sl-tile">${photoBtn(mh, "Milk Hill 2001, aerial")}</div><figcaption>Milk Hill, 2001</figcaption></figure>
       </div>
-      <h4 class="st-listhead">Longest paid builds</h4>
-      <ul class="st-rows">${top.map(row).join("")}</ul>
-      <details class="st-all"><summary>See all ${T.builds.length} reported build times</summary><ul class="st-rows">${T.builds.map(row).join("")}</ul></details>`;
-    const julia = T.rows[0], milk = T.rows[1];
-    const m4 = sub("Julia Set, 1996", pointList(julia.build.concat(julia.window))) +
-      sub("Milk Hill, 2001", pointList(milk.build.concat(milk.window))) +
-      `<p class="st-p">${esc(T.note)}</p>`;
-    const k4 = c4.statA.src.concat(c4.statB.src, T.builds.flatMap((b) => b.src), keysOf(julia.build.concat(julia.window, milk.build, milk.window)));
+      <p class="sl-line">${esc(K.simple.line)}</p>`, src(K.simple.src)));
 
-    /* 5 */
-    const c5 = ST.ch5;
-    const quote = (q) => `<blockquote class="st-q"><p>${esc(q.q)}</p><cite>${esc(q.who)}</cite></blockquote>`;
-    const v5 = `<div class="st-pair">
-        <div class="st-half"><span class="st-tag n">Praised as precise</span>${c5.none.map(quote).join("")}</div>
-        <div class="st-half"><span class="st-tag n">Errors found</span>${c5.some.map(quote).join("")}</div>
-      </div>`;
-    const nE = [0, 1, 3].map((i) => C.mistakes.noErrors[i]), yE = [1, 3].map((i) => C.mistakes.errors[i]);
-    const m5 = sub("Precision — more", pointList(nE)) + sub("Errors — more", pointList(yE, "counter"));
-    const k5 = c5.none.concat(c5.some).flatMap((q) => q.src).concat(keysOf(nE), keysOf(yE));
+    /* 5 nodes */
+    S.push(slide("", `${tag("u")}<h3 class="sl-h">${esc(K.nodes.head)}</h3>
+      <div class="sl-media"><img src="${esc(K.nodes.img)}" alt="${esc(K.nodes.alt)}" loading="lazy" /></div>
+      <p class="sl-line">${esc(K.nodes.line)}</p><p class="sl-note">${esc(K.nodes.note)}</p>`, src(K.nodes.src)));
 
-    /* 6 */
+    /* 6 time */
+    S.push(slide("", `<h3 class="sl-h">${esc(K.time.head)}</h3>
+      <div class="sl-vs">
+        <div class="sl-stat c"><b>${esc(K.time.a.big)}</b><span>${esc(K.time.a.small)}</span></div>
+        <div class="sl-stat u"><b>${esc(K.time.b.big)}</b><span>${esc(K.time.b.small)}</span></div>
+      </div>
+      <p class="sl-line">${esc(K.time.line)}</p>`, src(K.time.src)));
+
+    /* 7 longest */
+    const row = (b, i) => `<li>${i != null ? `<i>${i + 1}</i>` : ""}<div><b>${esc(b.name)}</b><span>${esc(b.year)} \u00b7 ${esc(b.time)}</span></div></li>`;
+    const top = K.longest.topIds.map((n) => T.builds.find((b) => b.name === n)).filter(Boolean);
+    S.push(slide("", `${tag("c")}<h3 class="sl-h">${esc(K.longest.head)}</h3>
+      <ol class="sl-top">${top.map((b, i) => row(b, i)).join("")}</ol>
+      <button type="button" class="sl-more" data-all="1">See all ${T.builds.length} builds</button>
+      <div class="sl-all hidden" id="slAll"><div class="sl-all-head"><b>All reported build times</b><button type="button" class="sl-x" data-all="0" aria-label="Close">\u00d7</button></div>
+        <ul>${T.builds.map((b) => `<li><b>${esc(b.name)}</b><span>${esc(b.year)} \u00b7 ${esc(b.time)}${/not stated/i.test(b.light) ? "" : " \u00b7 " + esc(b.light.toLowerCase())}</span><small>${srcLinks(b.src.slice(0, 1))}</small></li>`).join("")}</ul></div>`,
+      src(top.flatMap((b) => b.src.slice(0, 1)))));
+
+    /* mess-ups */
+    const n = K.messups.length;
+    K.messups.forEach((m, i) => {
+      const d = m.id ? item(m.id) : null;
+      const vis = m.big ? `<div class="sl-big"><b>${esc(m.big)}</b><span>${esc(m.bigSub)}</span></div><p class="sl-note">${esc(m.noPhoto)}</p>`
+        : d ? `<div class="sl-media">${photoBtn(d, m.place + " " + m.date)}</div>`
+        : `<a class="sl-media" href="${esc(m.link)}" target="_blank" rel="noopener"><img src="${esc(m.img)}" alt="${esc(m.alt)}" loading="lazy" referrerpolicy="no-referrer" /></a>`;
+      S.push(slide("sl-mess", `${tag(`Mess-up ${i + 1} of ${n}`)}<h3 class="sl-h">${esc(m.head)}</h3>
+        <p class="sl-place">${esc(m.place)} \u00b7 ${esc(m.date)}</p>
+        ${vis}${m.credit ? `<p class="sl-credit">${esc(m.credit)}</p>` : ""}
+        <blockquote class="sl-q"><p>${esc(m.quote)}</p><cite>\u2014 ${esc(m.who)}</cite></blockquote>`, src(m.src)));
+    });
+
+    /* counterpoint */
+    const bc = item(K.counter.id);
+    S.push(slide("", `${tag("Counterpoint")}<h3 class="sl-h">${esc(K.counter.head)}</h3>
+      <div class="sl-media">${photoBtn(bc, "Barbury Castle 2008, aerial")}</div>
+      <blockquote class="sl-q"><p>${esc(K.counter.quote)}</p><cite>\u2014 ${esc(K.counter.who)}</cite></blockquote>`, src(K.counter.src)));
+
+    /* years */
     const BY = C.byYear;
-    const v6 = `<div class="st-seg" role="group" aria-label="Count">
-        ${BY.series.map((sr) => `<button type="button" data-series="${sr.key}" aria-pressed="${sr.key === claimsSeries}">${sr.key === "world" ? "Worldwide" : "England"}</button>`).join("")}
-      </div>
+    S.push(slide("", `<h3 class="sl-h">${esc(K.years.head)}</h3>
+      <div class="st-seg" role="group" aria-label="Count">${BY.series.map((sr) => `<button type="button" data-series="${sr.key}" aria-pressed="${sr.key === claimsSeries}">${sr.key === "world" ? "Worldwide" : "England"}</button>`).join("")}</div>
       <div class="st-chart" id="stChart"></div>
-      <p class="st-readout" id="stReadout"></p>`;
-    const m6 = sub("Why counts disagree", `<p class="st-p">${esc(BY.intro)}</p>`) + sub("Other published totals", pointList(BY.points)) + `<p class="st-p">${esc(BY.chartNote.replace(/ The right-hand number.*$/, ""))}</p>`;
-    const k6 = BY.series.flatMap((sr) => sr.src).concat(keysOf(BY.points));
+      <p class="st-readout" id="stReadout"></p>
+      <p class="sl-line">${esc(K.years.line)}</p>`, `<p class="sl-src" id="stSrc"></p>`));
 
-    claimsBody.innerHTML = `
-      <nav class="st-chips" aria-label="Steps">${[1, 2, 3, 4, 5, 6].map((n) => `<button type="button" data-step="${n}" aria-label="Step ${n}: ${esc(ST["ch" + n].head)}"${n === claimsStep ? ' aria-current="step"' : ""}>${n}</button>`).join("")}</nav>
-      ${ch(1, c1, v1, m1, k1)}${ch(2, c2, v2, m2, k2)}${ch(3, c3, v3, m3, k3)}${ch(4, c4, v4, m4, k4)}${ch(5, c5, v5, m5, k5)}${ch(6, ST.ch6, v6, m6, k6)}`;
+    /* close */
+    S.push(slide("sl-title", `<div class="sl-ring big" aria-hidden="true"><span></span></div>
+      <h3 class="sl-h">${esc(K.close.head)}</h3><p class="sl-line">${esc(K.close.line)}</p>
+      <button type="button" class="sl-go" data-go="0">\u21ba ${esc(K.close.again)}</button>`));
+
+    slideCount = S.length;
+    claimsBody.innerHTML = `<div class="deck" id="deck" aria-roledescription="carousel" aria-label="Who made them? slides" tabindex="0">
+        <div class="deck-track" id="deckTrack">${S.join("")}</div>
+        <div class="deck-bar">
+          <button type="button" class="deck-arrow" data-dir="-1" aria-label="Previous slide">\u2039</button>
+          <div class="deck-dots" role="tablist">${S.map((_, i) => `<button type="button" role="tab" data-go="${i}" aria-label="Slide ${i + 1} of ${S.length}"></button>`).join("")}</div>
+          <button type="button" class="deck-arrow" data-dir="1" aria-label="Next slide">\u203a</button>
+        </div>
+      </div>`;
     claimsBody.dataset.ready = "1";
     drawYearChart();
+    bindDeck();
+    sizeDeck();
+    goSlide(slideIdx, true);
+  }
+
+  function sizeDeck() {
+    const deck = document.getElementById("deck");
+    if (!deck || claimsView.classList.contains("hidden")) return;
+    const head = document.querySelector("header.top");
+    const h = window.innerHeight - (head ? head.getBoundingClientRect().height : 0);
+    deck.style.height = Math.max(420, h) + "px";
+  }
+
+  function goSlide(i, instant) {
+    const track = document.getElementById("deckTrack");
+    if (!track) return;
+    slideIdx = Math.max(0, Math.min(slideCount - 1, i));
+    track.style.transition = instant ? "none" : "";
+    track.style.transform = `translateX(${-slideIdx * 100}%)`;
+    track.querySelectorAll(".slide").forEach((s, k) => s.setAttribute("aria-hidden", String(k !== slideIdx)));
+    claimsView.querySelectorAll(".deck-dots button").forEach((b, k) => b.setAttribute("aria-selected", String(k === slideIdx)));
+    claimsView.querySelectorAll('[data-dir="-1"]').forEach((b) => { b.disabled = slideIdx === 0; });
+    claimsView.querySelectorAll('[data-dir="1"]').forEach((b) => { b.disabled = slideIdx === slideCount - 1; });
+    const all = document.getElementById("slAll");
+    if (all) all.classList.add("hidden");
+  }
+
+  function bindDeck() {
+    const deck = document.getElementById("deck");
+    const track = document.getElementById("deckTrack");
+    let x0 = null, y0 = 0, dx = 0, horiz = null;
+    deck.addEventListener("touchstart", (e) => {
+      if (e.target.closest(".sl-all, .st-chart")) { x0 = null; return; }
+      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; horiz = null;
+    }, { passive: true });
+    deck.addEventListener("touchmove", (e) => {
+      if (x0 == null) return;
+      dx = e.touches[0].clientX - x0;
+      const dy = e.touches[0].clientY - y0;
+      if (horiz == null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) horiz = Math.abs(dx) > Math.abs(dy);
+      if (!horiz) return;
+      e.preventDefault();
+      track.style.transition = "none";
+      const edge = (slideIdx === 0 && dx > 0) || (slideIdx === slideCount - 1 && dx < 0) ? 0.3 : 1;
+      track.style.transform = `translateX(calc(${-slideIdx * 100}% + ${dx * edge}px))`;
+    }, { passive: false });
+    deck.addEventListener("touchend", () => {
+      if (x0 == null) return;
+      x0 = null;
+      const w = deck.clientWidth;
+      if (horiz && Math.abs(dx) > Math.min(70, w * 0.18)) goSlide(slideIdx + (dx < 0 ? 1 : -1));
+      else goSlide(slideIdx);
+    });
+    deck.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") { goSlide(slideIdx + 1); e.preventDefault(); }
+      if (e.key === "ArrowLeft") { goSlide(slideIdx - 1); e.preventDefault(); }
+    });
+    window.addEventListener("resize", sizeDeck);
   }
 
   function drawYearChart() {
@@ -411,19 +462,10 @@
     const last = Math.max(...Object.keys(sr.data).map(Number));
     el.innerHTML = `<div class="st-bars ${sr.key}">${bars.join("")}</div><div class="st-ticks">${ticks.join("")}</div>`;
     const ro = document.getElementById("stReadout");
-    ro.dataset.def = `Peak: ${max} in ${peakY} \u00b7 ${last}: ${sr.data[last]}. Tap a bar for its year.`;
-    ro.innerHTML = `${esc(ro.dataset.def)}<br><span class="cl-src">${esc(sr.label)} \u00b7 ${srcLinks(sr.src)}</span>`;
-  }
-
-  function goStep(n) {
-    claimsStep = Math.min(6, Math.max(1, n));
-    claimsView.querySelectorAll(".st-ch").forEach((a) => a.classList.toggle("hidden", +a.dataset.ch !== claimsStep));
-    claimsView.querySelectorAll(".st-chips button").forEach((b) => {
-      if (+b.dataset.step === claimsStep) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
-    });
-    const lede = document.getElementById("claimsLede");
-    const y = lede.getBoundingClientRect().bottom + window.scrollY + 16 - 122;
-    window.scrollTo({ top: Math.max(0, y), behavior: "auto" });
+    ro.dataset.def = `Peak: ${max} in ${peakY} \u00b7 ${last}: ${sr.data[last]}`;
+    ro.textContent = ro.dataset.def;
+    const s = document.getElementById("stSrc");
+    if (s) s.innerHTML = `Source: ${srcLinks(sr.src)}${sr.key === "england" ? " (read from chart image)" : ""}`;
   }
 
   function renderHotspots() {
@@ -513,7 +555,8 @@
     evidence.classList.toggle("hidden", name !== "evidence");
     hotspotsView.classList.toggle("hidden", name !== "hotspots");
     claimsView.classList.toggle("hidden", name !== "claims");
-    if (name === "claims") renderClaims();
+    document.body.classList.toggle("deck-mode", name === "claims");
+    if (name === "claims") { window.scrollTo(0, 0); renderClaims(); }
     const ph = placeFilterId && hs.hotspots.find((h) => h.id === placeFilterId);
     placeChip.classList.toggle("hidden", !(isG && ph));
     if (name === "evidence") { renderOrbCard(); renderEvidence(); }
@@ -522,8 +565,12 @@
   }
 
   claimsView.addEventListener("click", (e) => {
-    const st = e.target.closest("[data-step]");
-    if (st) { goStep(+st.dataset.step); return; }
+    const all = e.target.closest("[data-all]");
+    if (all) { document.getElementById("slAll").classList.toggle("hidden", all.dataset.all === "0"); return; }
+    const go = e.target.closest("[data-go]");
+    if (go) { goSlide(+go.dataset.go); return; }
+    const dir = e.target.closest("[data-dir]");
+    if (dir) { goSlide(slideIdx + +dir.dataset.dir); return; }
     const se = e.target.closest("[data-series]");
     if (se) {
       claimsSeries = se.dataset.series;
@@ -535,14 +582,21 @@
     if (bar) {
       claimsView.querySelectorAll(".st-bar.sel").forEach((b) => b.classList.remove("sel"));
       bar.classList.add("sel");
-      const ro = document.getElementById("stReadout");
-      ro.firstChild.textContent = `${bar.dataset.y}: ${bar.dataset.v} reported (${claimsSeries === "world" ? "worldwide" : "England"}).`;
+      document.getElementById("stReadout").textContent = `${bar.dataset.y}: ${bar.dataset.v} reported (${claimsSeries === "world" ? "worldwide" : "England"})`;
       return;
     }
-    const t = e.target.closest(".st-photo");
+    const t = e.target.closest(".sl-photo");
     if (t) {
       const item = allData.find((d) => d.id === t.dataset.id);
       if (item) openDetail(item);
+      return;
+    }
+    /* tap the left or right edge of a slide to move */
+    const sl = e.target.closest(".slide");
+    if (sl && !e.target.closest("a, button, .sl-all")) {
+      const r = sl.getBoundingClientRect();
+      const fx = (e.clientX - r.left) / r.width;
+      if (fx < 0.22) goSlide(slideIdx - 1); else if (fx > 0.78) goSlide(slideIdx + 1);
     }
   });
 

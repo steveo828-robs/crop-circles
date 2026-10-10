@@ -59,11 +59,48 @@
     dallaglio: ["Claudio Dall’Aglio chart, via Crop Circle Connector archives", "https://www.cropcirclearchives.co.uk/archives/ccarchives.htm"],
     si92: ["Nickell & Fischer, Skeptical Inquirer vol. 16 (1992)", "https://cdn.centerforinquiry.org/wp-content/uploads/sites/29/1992/01/22165201/p39.pdf"],
     vigayDist: ["Paul Vigay, ‘Crop Circle Distribution Patterns’", "http://www.vigay.com/cropcircles/articles/distribution.html"],
-    bbc21: ["BBC Travel, 22 Aug 2021", "https://www.bbc.com/travel/article/20210822-englands-crop-circle-controversy"]
+    bbc21: ["BBC Travel, 22 Aug 2021", "https://www.bbc.com/travel/article/20210822-englands-crop-circle-controversy"],
+    vigay00s: ["Paul Vigay, Allington field report", "https://www.vigay.com/cropcircles/articles/uk2000dg.html"],
+    vigayCrab: ["Paul Vigay, Crabwood analysis, Aug 2002", "https://www.vigay.com/cropcircles/articles/alienface.html"],
+    pringleHS11: ["Lucy Pringle, Honeystreet 2011 page", "https://cropcirclephotographs.co.uk/photos/2011/honey-street2-cropcircle-2011.shtml"],
+    eevee11: ["Cosmic Crop Circles blog, 4 Jun 2011", "http://cosmiccropcircles.blogspot.com/2011/06/hackpen-hill-nr-wrougton-wiltshire-may.html"],
+    tt11: ["Steve Alexander, Temporary Temples 2011", "https://temporarytemples.co.uk/crop-circles/2011-crop-circles"],
+    croppie20: ["The Croppie, 24 Jun 2020", "https://thecroppie.com/2020/06/24/2020-circles-berwick-bassett-clump-winterbourne-monkton-wiltshire/"],
+    guardian00: ["The Guardian, 7 Nov 2000", "https://www.theguardian.com/uk/2000/nov/07/geoffreygibbs.sallyjamesgregory"],
+    gh00: ["Gazette and Herald, Nov 2000", "https://www.gazetteandherald.co.uk/news/7393908.man-fined-100-for-making-crop-circle/"]
   };
 
   const CLAIMS = {
     lede: "People who said they made crop circles — and the counterpoints researchers raise. Every line names who said it; this app doesn’t decide how any formation was made.",
+
+    /* v7 slide deck. Every line is attributed; quotes are verbatim from the linked source. */
+    deck: {
+      title: { head: "Who really made them?", line: "Some people say they made crop circles. Here’s what they said — and what others say back.", hint: "Swipe or tap → to begin" },
+      doug: { head: "Doug & Dave", tag: "c", big: "1978", bigSub: "the year Bower said their first circle was made", line: "In 1991 they told Today they had made circles with “4ft wooden plinths, with rope reins… and an old baseball cap”.", src: ["today91"] },
+      cm: { head: "Circlemakers", tag: "c", big: "15", bigSub: "commissions written up on their own site", line: "A UK art group that makes formations for adverts and TV — and publishes how long each took.", src: ["cmWork"] },
+      simple: { head: "Simple then, complex now", line: "Doug & Dave described a plain swirled ring. Milk Hill (2001) had 409 circles — no one has claimed it.", src: ["today91", "ccc01"] },
+      nodes: { head: "Up close: bent nodes", img: "img/anomalies/blt_node_italy.jpg", alt: "Elongated node on a wheat stalk, as presented by BLT Research", line: "BLT Research says stalks in some formations are bent and stretched at the nodes. Critics say a plank can do the same.", note: "We found no licensed close-up from a claimed man-made formation.", src: ["blt", "grassi"] },
+      time: { head: "How long to build?", a: { big: "Up to 3 days", small: "paid builds, as reported", src: ["lego24", "ansty16"] }, b: { big: "≈ 4 h", small: "full darkness the night Milk Hill was reported", src: ["tadSwindon"] }, line: "Paid builds were often done with permission, some in daylight.", src: ["lego24", "ansty16", "tadSwindon"] },
+      longest: { head: "Longest paid builds", topIds: ["LEGO Australia", "Mothership Glass (reported)", "Korn (rock band)"] },
+      messIntro: "Mess-ups",
+      messups: [
+        { place: "Allington, Wiltshire", date: "Aug 2000", head: "Bars out of sync", img: "https://www.vigay.com/cropcircles/reports/uk2000dg/uk00dgsm.gif", imgKind: "diagram", alt: "Paul Vigay’s geometry overlay of the Allington 2000 formation", credit: "Analysis image: Paul Vigay", link: "https://www.vigay.com/cropcircles/articles/uk2000dg.html",
+          quote: "“…the hoaxers got their alternating flattened/standing bars out of sync!”", who: "Paul Vigay, researcher", src: ["vigay00s"] },
+        { place: "Crabwood, Hampshire", date: "Aug 2002", head: "A garbled word", img: "https://www.vigay.com/cropcircles/imgs/uk02dl/aerial1.jpg", alt: "Aerial photo of the Crabwood 2002 ‘face’ and disc", credit: "Photo © Lucy Pringle, via vigay.com", link: "https://www.vigay.com/cropcircles/articles/alienface.html",
+          quote: "One word in the coded disc reads “EELIJ?E” — perhaps BELIEVE. That “could indicate an error in the physical construction”.", who: "Paul Vigay, who also called the frame “slightly sloppy”", src: ["vigayCrab"] },
+        { place: "Honeystreet, Wiltshire", date: "Jul 2011", head: "Left unfinished?", img: "https://cropcirclephotographs.co.uk/photos/2011/honey-street2a.jpg", alt: "Aerial photo of the Honeystreet formation reported 4 July 2011", credit: "Photo © Lucy Pringle", link: "https://cropcirclephotographs.co.uk/photos/2011/honey-street2-cropcircle-2011.shtml",
+          quote: "“A circle containing a seemingly unfinished elaborate design.”", who: "Lucy Pringle, photographer", src: ["pringleHS11"] },
+        { place: "Hackpen Hill, Wiltshire", date: "May 2011", head: "Messed up mid-build?", id: "2011-05-30-hackpen-hill", credit: "Photo: Steve Alexander / Temporary Temples",
+          quote: "“Either someone messed up this formation during it’s construction, and it remains unfinished, or it was always meant to look like this?”", who: "Cosmic Crop Circles blog", src: ["eevee11", "tt11"] },
+        { place: "Berwick Bassett, Wiltshire", date: "Jun 2020", head: "Abandoned?", img: "https://thecroppie.com/wp-content/uploads/2020/06/received_259014408724402.jpeg", alt: "Photo of the Berwick Bassett formation reported 21 June 2020", credit: "Photo: Nick Bull, via The Croppie", link: "https://thecroppie.com/2020/06/24/2020-circles-berwick-bassett-clump-winterbourne-monkton-wiltshire/",
+          quote: "“…maybe just an abandoned, incomplete effort.”", who: "The Croppie", src: ["croppie20"] },
+        { place: "West Overton, Wiltshire", date: "Aug 2000", head: "Caught and fined", big: "£100", bigSub: "fine, plus £40 costs", noPhoto: "No licensed photo of this formation found.",
+          quote: "Matthew Williams admitted making a seven-pointed star “to prove the experts wrong” — believed to be Britain’s first such prosecution.", who: "Gazette and Herald; The Guardian", src: ["gh00", "guardian00"] }
+      ],
+      counter: { head: "The other side", id: "2008-06-01-barbury-castle-pi", quote: "“…you try putting that in a field in the middle of the night and achieving that degree of mathematical accuracy.”", who: "Lucy Pringle, on Barbury Castle 2008 (unclaimed)", src: ["plus08", "mail08"] },
+      years: { head: "How many each year?", line: "Reports rose fast in the late 1980s, peaked in the 1990s, and are now a few dozen a year." },
+      close: { head: "You decide.", line: "Every slide names who said what. Tap “Source” to check it yourself.", again: "Start again" }
+    },
 
     story: {
       intro: "Some people say they made crop circles. Six short steps: what they said, and what others say back. This app doesn’t decide who is right.",
