@@ -282,7 +282,25 @@
   let slideDet = [];
 
   const PF = { y: "Proof shown", p: "Partial proof", n: "No proof shown — claim only" };
-  function pfBadge(s, extra) { return `<span class="pf pf-${s}">${esc(PF[s])}${extra ? ` <em>${esc(extra)}</em>` : ""}</span>`; }
+  const PFNF = "Claim only — proof said to exist but not found online";
+  const PFNF_SHORT = "Claim only — proof not found online";
+  function pfBadge(s, extra, nf) { return `<span class="pf pf-${s}">${esc(nf ? (nf === "short" ? PFNF_SHORT : PFNF) : PF[s])}${extra ? ` <em>${esc(extra)}</em>` : ""}</span>`; }
+  /* badge for a proof row; short = compact wording for tiles and lists */
+  function pfOf(r, extra, short) { return pfBadge(r.s, extra, r.nf ? (short ? "short" : true) : false); }
+  /* v9: the proof itself — click-to-load youtube-nocookie embed, or a big direct link */
+  const ytUrl = (id) => `https://www.youtube.com/watch?v=${id}`;
+  const pvHref = (v) => v.yt ? ytUrl(v.yt) : v.url;
+  const isFootage = (v) => !!v.yt || /gettyimages/.test(v.url || "");
+  function pvVerb(v) { return isFootage(v) ? "Watch the proof" : /circlemakers/.test(v.url) ? "See the build photos" : /sheldrake/.test(v.url) ? "See the aerial photo" : "Read the article"; }
+  function pvShort(v) { return v.yt ? "video" : /gettyimages/.test(v.url) ? "news footage" : /circlemakers/.test(v.url) ? "build photos on makers’ site" : /sheldrake/.test(v.url) ? "aerial photo" : "newspaper article"; }
+  function pvEmbed(v) {
+    return `<div class="pv-yt"><button type="button" class="pv-play" data-yt="${esc(v.yt)}" data-title="${esc(v.label)}" aria-label="Load video: ${esc(v.label)}">
+      <span class="pv-fb">Video preview needs signal</span><img src="https://i.ytimg.com/vi/${esc(v.yt)}/hqdefault.jpg" alt="" loading="lazy" referrerpolicy="no-referrer" />
+      <span class="pv-tri" aria-hidden="true"></span><span class="pv-cap">\u25b6 Tap to play \u00b7 ${esc(v.label)}</span></button></div>`;
+  }
+  function pvBtn(v, small) {
+    return `<a class="pv-btn${small ? " sm" : ""}" href="${esc(pvHref(v))}" target="_blank" rel="noopener"><b>${isFootage(v) ? "\u25b6 " : ""}${esc(pvVerb(v))} \u2197</b><small>${esc(v.label)}${v.yt ? " \u00b7 YouTube" : ""}</small></a>`;
+  }
 
   function renderClaims() {
     if (claimsBody.dataset.ready) { sizeDeck(); return; }
@@ -308,6 +326,7 @@
         <div class="sl-stat ${b.c || "u"}"><b>${esc(b.big)}</b><span>${esc(b.small)}</span></div></div>`;
     const line = (t) => `<p class="sl-line">${esc(t)}</p>`;
     const note = (t) => `<p class="sl-note">${esc(t)}</p>`;
+    const pvDet = (r) => r.pv ? `<h5 class="sd-h">The proof itself</h5><ul class="sd-list">${r.pv.map((v) => `<li>${pvBtn(v, true)}<p class="sd-p"><b>What it shows:</b> ${esc(v.shows)}</p><p class="sd-src">${esc(v.src)}</p></li>`).join("")}</ul>` : "";
 
     const S = [];
     let chap = "";
@@ -331,11 +350,11 @@
     add({ ch: "Start", head: "In this deck", body: `<div class="sl-toc" id="slToc"></div>` });
     add({ ch: "Start", head: "How to read the badges",
       body: `<ul class="sl-legend">
-        <li>${pfBadge("y")}<span>Someone other than the claimant saw, filmed, judged or documented it.</span></li>
+        <li>${pfBadge("y")}<span>The proof itself is linked: video of the build, build photos, or a court report.</span></li>
         <li>${pfBadge("p")}<span>Some proof, but of something smaller — e.g. a simple demo, not the formations claimed.</span></li>
+        <li>${pfBadge("n", "", "short")}<span>Footage, an advert or a broadcast was said to exist — we couldn’t find it online.</span></li>
         <li>${pfBadge("n")}<span>They said it; no footage, witness or paperwork was published.</span></li>
-        <li><span class="sl-tag c">Claimed man-made</span><span>Someone said they made it.</span></li>
-        <li><span class="sl-tag u">Reported unexplained</span><span>Researchers presented it as unexplained.</span></li></ul>`,
+        <li class="sl-tags2"><span class="sl-tag c">Claimed man-made</span><span class="sl-tag u">Reported unexplained</span><span>Someone said they made it \u00b7 researchers presented it as unexplained.</span></li></ul>`,
       det: `<p class="sd-p">${esc(C.proofIntro)}</p>` });
 
     /* ——— Doug & Dave ——— */
@@ -353,16 +372,19 @@
     add({ ch: "Doug & Dave", top: pfBadge("n"), head: "When did they start?", body: vs({ big: "1978", small: "Bower, in Today (1991)" }, { big: "1976", small: "Smithsonian; Circlemakers (Longwood Estate, “about 30 feet across”)", c: "c" }) +
       line("The Croppie notes the start date varies between accounts: 1975, 1976 or 1978.") + note("Early circles: their own account only. " + "No footage or outside witness cited."),
       src: ["today91", "smithsonian", "cmNews", "croppie"], det: detList([D[0].points[1], D[0].points[2], D[0].counter[1]]) + `<h5 class="sd-h">Proof status</h5><p class="sd-p">${esc(ch.how)}</p>` });
-    add({ ch: "Doug & Dave", top: pfBadge("y", "demo only"), head: "The Delgado episode",
+    const ddDemo = pr("Demonstrations for the press, 1991");
+    add({ ch: "Doug & Dave", top: pfOf(ddDemo, "demo only"), head: "The Delgado episode",
       body: quote("“No human could have done this.”", "Pat Delgado, after inspecting their demo circle near Sevenoaks, Kent") +
-      line("Today journalists had watched the pair make it “step by step” hours earlier.") + note("A simple design they said they’d used “four or five times” that summer — not one of the complex formations."),
-      src: ["today91"], det: detList([D[0].points[5]]) + `<p class="sd-p">${esc(pr("Demonstration circle near Sevenoaks, Kent").how)}</p>` + detList([MI.errors[6]]) });
+      line("Today journalists had watched the pair make it “step by step” hours earlier.") + pvBtn(ddDemo.pv[0], true) + note("Simple designs — not the complex formations."),
+      src: ["today91", "gettyDD"], det: detList([D[0].points[5]]) + `<p class="sd-p">${esc(ddDemo.how)}</p>` + pvDet(ddDemo) + detList([MI.errors[6]]) });
     add({ ch: "Doug & Dave", head: "Their count vs the total", body: vs({ big: "25–30", small: "new circles a season, they said (Time, 1991)" }, { big: "≈ 800", small: "the annual count by 1991 (Rupert Sheldrake)", c: "n" }) +
       quote("“…a maximum of 30 formations a year”", "Rupert Sheldrake, even if their claims were believed"),
       src: ["time91", "sheldrake"], det: detList([D[0].points[4], D[0].counter[0]]) });
 
     /* ——— Circlemakers ——— */
-    add({ ch: "Circlemakers", top: tag("c") + pfBadge("y", "for named commissions"), head: "Circlemakers",
+    const cmRows = C.proof.filter((r) => /^Circlemakers/.test(r.who));
+    const cmC = { y: cmRows.filter((r) => r.s === "y").length, p: cmRows.filter((r) => r.s === "p").length, n: cmRows.filter((r) => r.s === "n").length };
+    add({ ch: "Circlemakers", top: tag("c") + pfBadge("p", `proof online for ${cmC.y} of ${cmRows.length}`), head: "Circlemakers",
       body: big("1995", "website started by John Lundberg, Rod Dickinson & Geoff Gilbertson") + line("Members named include John Lundberg, Rod Dickinson, Wil Russell and Rob Irving. They make formations for adverts, TV and bands."),
       src: ["cmAbout", "cmWork"], det: detList(D[1].points) });
     add({ ch: "Circlemakers", head: "Their tools", body: bul([
@@ -372,11 +394,11 @@
         "Optional: an infrared image intensifier"]) +
       quote("“All we had were sketches, 100ft-long tape measures… and 4ft planks with a rope connecting each end.”", "John Vidal, The Guardian, watching a team of four at night"),
       src: ["cmTools", "vidal"], det: detList([D[1].points[1], D[1].points[3]]) });
-    add({ ch: "Circlemakers", top: pfBadge("y"), head: "Paid work", body: bul([
+    add({ ch: "Circlemakers", top: pfBadge("p", `proof online for ${cmC.y} of ${cmRows.length}`), head: "Paid work", body: bul([
         "Adverts: Mitsubishi (1998), Mountain Dew (2000), Weetabix (2002), Nike Italy (2005)",
         "TV: BBC Country File, HTV West, History Channel, National Geographic (2004, 2009), BBC’s QI",
         "Campaigns: Greenpeace Mexico, The Sun’s Olympic rings, Tesco Mobile emojis (2015)",
-        "Music: The Levellers (2002), Korn (2010)"]) + note("The proof table covers the 15 with published build details."),
+        "Music: The Levellers (2002), Korn (2010)"]) + note(`Of the ${cmRows.length} in the proof table: proof online for ${cmC.y}, partial for ${cmC.p}, not found for ${cmC.n}.`),
       src: ["cmWork", "cmNews"], det: detList([D[1].points[2]]) + `<p class="sd-p">${esc(C.proofNote)}</p>` });
     add({ ch: "Circlemakers", head: "What they don’t claim", body: quote("“…careful never to admit responsibility for any specific formation”", "John Vidal, The Guardian, on crop-circle makers") +
       line("We found no formation in this gallery publicly claimed by the Circlemakers.") + note("Barbury Castle 2008: the Daily Mail reported “no one has claimed responsibility”."),
@@ -384,7 +406,7 @@
 
     /* ——— 1992 contest ——— */
     const c92 = pr("1992 crop-circle-making competition entries");
-    add({ ch: "1992 contest", top: tag("c") + pfBadge("y"), head: "The 1992 contest", body: vs({ big: "12 teams", small: "one set design, plots marked out by the organisers" }, { big: "10 pm–3 am", small: "in darkness — up to 5 hours", c: "n" }) +
+    add({ ch: "1992 contest", top: tag("c") + pfOf(c92), head: "The 1992 contest", body: vs({ big: "12 teams", small: "one set design, plots marked out by the organisers" }, { big: "10 pm–3 am", small: "in darkness — up to 5 hours", c: "n" }) +
       line("West Wycombe, 11 July 1992. Winners: three Westland Helicopters engineers, £3,000."),
       src: ["sheldrake"], det: detList([D[2].points[0]]) + `<h5 class="sd-h">Proof status</h5><p class="sd-p">${esc(c92.how)}</p>` });
     add({ ch: "1992 contest", head: "How it was run", body: bul([
@@ -399,8 +421,8 @@
         "One team (Matt Ridley’s) made a question mark instead",
         "Doug & Dave were invited, and declined",
         "Design notice: the text says three weeks ahead; a photo caption says 24 hours"]) +
-      `<a class="sl-link" href="${esc(g92.link)}" target="_blank" rel="noopener">Aerial photo of the entries (John Macnish) \u2197</a>`,
-      src: ["sheldrake"], det: `<p class="sd-p">${esc(G.noPhotoNote)}</p>` + detList([D[2].points[0]]) + `<p class="sd-p">${esc(T.builds.find((b) => b.name === "1992 making competition").note)}</p>` });
+      pvBtn(c92.pv[0], true) + `<a class="sl-link" href="${esc(g92.link)}" target="_blank" rel="noopener">Aerial photo of the entries (John Macnish) \u2197</a>`,
+      src: ["sheldrake", "yt1992"], det: pvDet(c92) + `<p class="sd-p">${esc(G.noPhotoNote)}</p>` + detList([D[2].points[0]]) + `<p class="sd-p">${esc(T.builds.find((b) => b.name === "1992 making competition").note)}</p>` });
 
     /* ——— Other claims ——— */
     const jl = pr("Julia Set, near Stonehenge");
@@ -412,14 +434,17 @@
     add({ ch: "Other claims", top: tag("c") + pfBadge("n"), head: "Ansty, 2016", body: big("3 days", "reported build time, with the field owners’ agreement") +
       line("Colin Andrews reported it was a paid commission for Mothership Glass.") + note("Andrews says the makers’ names are “known to me” — none published."),
       src: ["ansty16"], det: `<p class="sd-p">${esc(an.how)}</p><p class="sd-p">${esc(T.builds.find((b) => b.name === "Mothership Glass (reported)").note)}</p>` });
-    add({ ch: "Other claims", top: tag("c") + pfBadge("y", "client on record"), head: "LEGO, 2024", body: big("3 days", "“three full days” — Clare Basire, Thrive PR") +
-      line("A 50 m design based on a LEGO Minifigure at Narromine, NSW, for LEGO’s space range."),
-      src: ["lego24"], det: `<p class="sd-p">${esc(pr("LEGO Space, Narromine NSW").how)}</p><p class="sd-p">${esc(T.builds.find((b) => b.name === "LEGO Australia").note)}</p>` });
+    const lg = pr("LEGO Space, Narromine NSW");
+    add({ ch: "Other claims", top: tag("c") + pfOf(lg), head: "LEGO, 2024", body: big("3 days", "“three full days” — Clare Basire, Thrive PR") +
+      line("A 50 m design based on a LEGO Minifigure at Narromine, NSW, for LEGO’s space range.") + note("Missing: " + lg.missing),
+      src: ["lego24", "thriveLego"], det: `<p class="sd-p">${esc(lg.how)}</p><p class="sd-p"><b>Missing:</b> ${esc(lg.missing)}</p><p class="sd-p">${esc(T.builds.find((b) => b.name === "LEGO Australia").note)}</p>` });
     const sar = G.items.find((g) => g.img);
-    add({ ch: "Other claims", top: tag("c") + pfBadge("y", "video"), head: "Sarraltroff, 2018",
-      body: `<div class="sl-media"><img src="${esc(sar.img)}" alt="${esc(sar.imgAlt)}" loading="lazy" /></div><p class="sl-credit">${esc(sar.imgKind)} \u00b7 Wizly-08, CC BY-SA 4.0</p>` +
-      line("French YouTubers made it at night in “under two hours” and posted video of it."),
-      src: ["fi18", "rl18", "commonsSarr"], det: `<p class="sd-p">${esc(sar.who)}</p><p class="sd-p">${esc(pr("Sarraltroff, Moselle test formation").how)}</p>` });
+    const sr = pr("Sarraltroff, Moselle test formation");
+    add({ ch: "Other claims", cls: "sl-pv", top: tag("c") + pfOf(sr, "video"), head: "Sarraltroff, 2018",
+      body: line("French YouTubers made it at night in “under two hours” — here is their video of the build.") + pvEmbed(sr.pv[0]) +
+      `<p class="pv-shows"><b>What it shows:</b> ${esc(sr.pv[0].shows)}</p><a class="sl-link" href="${esc(ytUrl(sr.pv[0].yt))}" target="_blank" rel="noopener">Open on YouTube \u2197</a>`,
+      src: ["ytAstro", "fi18", "rl18"], det: `<p class="sd-p">${esc(sar.who)}</p><p class="sd-p">${esc(sr.how)}</p>` + pvDet(sr) +
+      `<h5 class="sd-h">Design</h5><div class="sd-img"><img src="${esc(sar.img)}" alt="${esc(sar.imgAlt)}" loading="lazy" /></div><p class="sd-src">${esc(sar.imgKind)} \u00b7 Wizly-08, CC BY-SA 4.0</p>`, detKeys: ["commonsSarr"] });
     add({ ch: "Other claims", head: "A researcher’s estimate", body: big("80%", "man-made, in Colin Andrews’ view (BBC News, 2000)") +
       line("He put about 20% down to eddies in the earth’s magnetic field."), src: ["bbc2000"], det: detList([D[2].points[2]]) });
 
@@ -427,7 +452,7 @@
     const tile = (g) => {
       const p = pr(g.proof);
       return `<li class="sl-gt">${g.img ? `<img src="${esc(g.img)}" alt="${esc(g.imgAlt)}" loading="lazy" />` : ""}
-        <b>${esc(g.title)}</b><span>${esc(g.date)}</span>${p ? pfBadge(p.s) : ""}
+        <b>${esc(g.title)}</b><span>${esc(g.date)}</span>${p ? pfOf(p, "", true) : ""}
         ${g.link ? `<a href="${esc(g.link)}" target="_blank" rel="noopener">Photos \u2197</a>` : `<small>${esc(g.imgKind || "")}</small>`}</li>`;
     };
     const gi = G.items;
@@ -472,7 +497,7 @@
     const row = (b, i) => `<li><i>${i + 1}</i><div><b>${esc(b.name)}</b><span>${esc(b.year)} \u00b7 ${esc(b.time)}</span></div></li>`;
     const top = K.longest.topIds.map((n) => T.builds.find((b) => b.name === n)).filter(Boolean);
     const bProof = (b) => C.proof.find((r) => r.build && r.build.split("|")[0] === b.name && (!r.build.split("|")[1] || r.build.split("|")[1] === b.year));
-    add({ ch: "Build time", top: tag("c"), head: K.longest.head, body: `<ol class="sl-top">${top.map((b, i) => { const p = bProof(b); return row(b, i).replace("</span></div>", `</span>${p ? pfBadge(p.s) : ""}</div>`); }).join("")}</ol>` +
+    add({ ch: "Build time", top: tag("c"), head: K.longest.head, body: `<ol class="sl-top">${top.map((b, i) => { const p = bProof(b); return row(b, i).replace("</span></div>", `</span>${p ? pfOf(p, "", true) : ""}</div>`); }).join("")}</ol>` +
       `<button type="button" class="sl-more" data-sheet="builds">See all ${T.builds.length} builds</button>`,
       src: top.flatMap((b) => b.src.slice(0, 1)) });
     const jr = T.rows[0], mr = T.rows[1];
@@ -496,15 +521,16 @@
         "Rod Dickinson: the Julia Set’s central circle, “a little out of place”, was a work area"]) + note("Next: six mess-ups, one per slide."),
       src: ["enigma21", "vidal", "iccra", "si22"], det: detList(MI.errors) });
     const n = K.messups.length;
+    const wo = pr("Seven-pointed star, West Overton");
     K.messups.forEach((m, i) => {
       const d = m.id ? item(m.id) : null;
-      const vis = m.big ? big(m.big, m.bigSub) + note(m.noPhoto)
+      const vis = m.big ? big(m.big, m.bigSub) + pvBtn(wo.pv[0], true)
         : d ? `<div class="sl-media">${photoBtn(d, m.place + " " + m.date)}</div>`
         : ext(m.img, m.alt, m.link);
       const isWO = /West Overton/.test(m.place);
       add({ ch: "Mess-ups", cls: "sl-mess", top: tag(`Mess-up ${i + 1} of ${n}`) + (isWO ? pfBadge("y", "court") : ""), head: m.head,
         body: `<p class="sl-place">${esc(m.place)} \u00b7 ${esc(m.date)}</p>${vis}${m.credit ? `<p class="sl-credit">${esc(m.credit)}</p>` : ""}` + quote(m.quote, m.who),
-        src: m.src, det: isWO ? `<p class="sd-p">${esc(pr("Seven-pointed star, West Overton").how)}</p>` : "" });
+        src: m.src, det: isWO ? `<p class="sd-p">${esc(wo.how)}</p>` + pvDet(wo) + `<p class="sd-p">${esc(m.noPhoto)}</p>` : "" });
     });
 
     /* ——— Other side ——— */
@@ -521,25 +547,36 @@
     /* ——— Proof ——— */
     const cnt = { y: 0, p: 0, n: 0 };
     C.proof.forEach((r) => cnt[r.s]++);
+    const nfRows = C.proof.filter((r) => r.nf), noRows = C.proof.filter((r) => r.s === "n" && !r.nf);
+    const withPv = C.proof.filter((r) => r.pv && r.s === "y").concat(C.proof.filter((r) => r.pv && r.s === "p"));
     add({ ch: "Proof", head: "Claims with proof vs claim only", body: `<div class="sl-pfcount">
         <div class="pfc y"><b>${cnt.y}</b><span>Proof shown</span></div>
         <div class="pfc p"><b>${cnt.p}</b><span>Partial</span></div>
         <div class="pfc n"><b>${cnt.n}</b><span>Claim only</span></div></div>` +
-      line(`${C.proof.length} claims in this app. ${C.proofIntro}`) + `<button type="button" class="sl-more" data-sheet="proof">See all ${C.proof.length} with sources</button>`,
-      det: `<p class="sd-p">${esc(C.proofNote)}</p>`, detKeys: ["vidal"] });
-    const weak = C.proof.filter((r) => r.s !== "y");
-    add({ ch: "Proof", head: "Claim only or partial", body: `<ul class="sl-pfl">${weak.map((r) => `<li>${pfBadge(r.s)}<b>${esc(r.what)}</b><span>${esc(r.who)} \u00b7 ${esc(r.year)}</span></li>`).join("")}</ul>`,
-      src: weak.flatMap((r) => r.src), det: `<ul class="sd-list">${weak.map((r) => `<li><p><b>${esc(r.what)}</b> — ${esc(r.how)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul>` });
-    const strong = [
-      ["Doug & Dave’s 1991 demo circle", "press watched it made"],
-      ["BBC Country File demo", "filmed by the BBC"],
-      ["1992 contest entries", "invigilators, judges, photos"],
-      ["West Overton star, 2000", "guilty plea in court"],
-      ["Sarraltroff, 2018", "makers’ own video"],
-      ["LEGO, 2024", "client’s PR agency on record"],
-      [`${C.proof.filter((r) => r.who === "Circlemakers").length} Circlemakers commissions`, "clients, adverts, TV"]];
-    add({ ch: "Proof", top: pfBadge("y"), head: "Claims with proof shown", body: `<ul class="sl-pfl compact">${strong.map(([a, b]) => `<li><b>${esc(a)}</b><span>${esc(b)}</span></li>`).join("")}</ul>` + note("Proof covers only the formation named."),
-      src: ["today91", "cmBeeb", "sheldrake"], det: `<ul class="sd-list">${C.proof.filter((r) => r.s === "y").map((r) => `<li><p><b>${esc(r.what)}</b> (${esc(r.year)}) — ${esc(r.how)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul><p class="sd-p">${esc(C.proofNote)}</p>` });
+      line(`${C.proof.length} claims. Proof means the evidence itself — video, build photos, a court report — linked here.`) +
+      note(`Of the ${cnt.n} claim-only: ${nfRows.length} had proof said to exist that we couldn’t find online; the other ${noRows.length} have no published proof.`) +
+      `<button type="button" class="sl-more" data-sheet="proof">Open the full proof table</button>`,
+      det: `<p class="sd-p">${esc(C.proofIntro)}</p><p class="sd-p">${esc(C.proofNote)}</p>`, detKeys: ["vidal"] });
+    const listStart = S.length + 2;
+    const half = Math.ceil(withPv.length / 2);
+    [withPv.slice(0, half), withPv.slice(half)].forEach((part, h) => add({ ch: "Proof", top: h ? pfBadge("p") + pfBadge("y") : pfBadge("y"), head: `The proof, one by one (${h + 1}/2)`,
+      body: `<ul class="sl-pfl compact pv-list">${part.map((r, k) => `<li><button type="button" data-go="${listStart + h * half + k}"><b>${esc(r.what)}</b><span>${r.s === "p" ? "Partial \u00b7 " : ""}${esc(r.pv.map(pvShort).filter((x, j, a) => a.indexOf(x) === j).join(" + "))} \u203a</span></button></li>`).join("")}</ul>` + note("Tap one to jump to its proof."),
+      det: `<ul class="sd-list">${part.map((r) => `<li><p><b>${esc(r.what)}</b> (${esc(r.year)}) — ${esc(r.how)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul>` }));
+    withPv.forEach((r) => {
+      const v = r.pv[0], v2 = r.pv[1];
+      add({ ch: "Proof", cls: "sl-pv", top: pfOf(r), head: r.what,
+        body: `<p class="sl-place">${esc(r.who)} \u00b7 ${esc(r.year)}</p>` +
+          (v.yt ? pvEmbed(v) : pvBtn(v)) +
+          `<p class="pv-shows"><b>What it shows:</b> ${esc(v.shows)}</p>` +
+          (v.yt ? `<a class="sl-link" href="${esc(ytUrl(v.yt))}" target="_blank" rel="noopener">Open on YouTube \u2197</a>` : "") +
+          (v2 ? pvBtn(v2, true) : "") +
+          (r.s === "p" ? `<p class="sl-note"><b>Why partial:</b> ${esc(r.how)}</p>` : ""),
+        src: r.src, det: `<p class="sd-p">${esc(r.how)}</p>` + pvDet(r) });
+    });
+    add({ ch: "Proof", top: pfBadge("n", "", "short"), head: "Said to exist, not found", body: `<ul class="sl-pfl compact tight">${nfRows.map((r) => `<li><b>${esc(r.what)} <span>\u00b7 ${esc(r.year)}</span></b></li>`).join("")}</ul>` + note("Tap Details for what’s missing from each."),
+      src: nfRows.flatMap((r) => r.src), det: `<ul class="sd-list">${nfRows.map((r) => `<li><p><b>${esc(r.what)}</b> (${esc(r.year)}) — ${esc(r.how)}</p><p class="sd-p"><b>Missing:</b> ${esc(r.missing)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul>` });
+    add({ ch: "Proof", top: pfBadge("n"), head: "Claim only", body: `<ul class="sl-pfl">${noRows.map((r) => `<li><b>${esc(r.what)}</b><span>${esc(r.who)} \u00b7 ${esc(r.year)}</span><span class="pv-miss">Missing: ${esc(r.missing)}</span></li>`).join("")}</ul>`,
+      src: noRows.flatMap((r) => r.src), det: `<ul class="sd-list">${noRows.map((r) => `<li><p><b>${esc(r.what)}</b> — ${esc(r.how)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul>` });
 
     /* ——— Each year ——— */
     add({ ch: "Each year", head: K.years.head, body: `<div class="st-seg" role="group" aria-label="Count">${BY.series.map((sr) => `<button type="button" data-series="${sr.key}" aria-pressed="${sr.key === claimsSeries}">${sr.key === "world" ? "Worldwide" : "England"}</button>`).join("")}</div>
@@ -563,12 +600,18 @@
 
     slideCount = S.length;
     const sheetBuilds = `<ul class="sd-list">${T.builds.map((b) => { const p = bProof(b); return `<li><p><b>${esc(b.name)}</b> \u00b7 ${esc(b.year)} \u00b7 ${esc(b.where)}</p>
-        <p class="sd-row">${p ? pfBadge(p.s) : ""}</p>
+        <p class="sd-row">${p ? pfOf(p) : ""}</p>
         <dl class="sd-dl"><dt>Time</dt><dd>${esc(b.time)}</dd><dt>Team</dt><dd>${esc(b.team)}</dd><dt>Size</dt><dd>${esc(b.size)}</dd><dt>Light</dt><dd>${esc(b.light)}</dd>${p ? `<dt>Proof</dt><dd>${esc(p.how)}</dd>` : ""}</dl>
         <p class="sd-p">${esc(b.note)}</p><p class="sd-src">${srcLinks(b.src)}</p></li>`; }).join("")}</ul><p class="sd-p">${esc(T.note)}</p>`;
-    const sheetProof = `<p class="sd-p">${esc(C.proofIntro)}</p><ul class="sd-list">${C.proof.map((r) => `<li><p class="sd-row">${pfBadge(r.s)}</p><p><b>${esc(r.what)}</b> (${esc(r.year)}) — ${esc(r.who)}</p><p class="sd-p">${esc(r.how)}</p><p class="sd-src">${srcLinks(r.src)}</p></li>`).join("")}</ul><p class="sd-p">${esc(C.proofNote)}</p>`;
+    const sheetProof = `<p class="sd-p">${esc(C.proofIntro)}</p><p class="sd-p"><b>${cnt.y}</b> proof shown \u00b7 <b>${cnt.p}</b> partial \u00b7 <b>${cnt.n}</b> claim only (${nfRows.length} of them: proof said to exist but not found online). Links checked 9 Oct 2026.</p>
+      <table class="pt"><thead><tr><th>Claim</th><th>Status</th><th>The proof itself</th><th>What it shows</th><th>Source</th></tr></thead><tbody>${C.proof.map((r) => `<tr class="pt-${r.s}">
+        <td data-l="Claim"><b>${esc(r.what)}</b><small>${esc(r.who)} \u00b7 ${esc(r.year)}</small></td>
+        <td data-l="Status">${pfOf(r)}</td>
+        <td data-l="The proof itself">${r.pv ? r.pv.map((v) => pvBtn(v, true)).join("") : `<span class="pt-none">None online</span>`}</td>
+        <td data-l="What it shows">${r.pv ? r.pv.map((v) => `<p>${esc(v.shows)}</p>`).join("") + (r.s === "p" ? `<p><em>Why partial:</em> ${esc(r.how)}</p>` : "") : `<p><em>Missing:</em> ${esc(r.missing || "")}</p><p>${esc(r.how)}</p>`}</td>
+        <td data-l="Source">${srcLinks(r.src)}</td></tr>`).join("")}</tbody></table><p class="sd-p">${esc(C.proofNote)}</p>`;
     slideDet.builds = { title: `All ${T.builds.length} reported build times`, html: sheetBuilds };
-    slideDet.proof = { title: "Proof status — all claims", html: sheetProof };
+    slideDet.proof = { title: `Proof table — all ${C.proof.length} claims`, html: sheetProof };
 
     claimsBody.innerHTML = `<div class="deck" id="deck" aria-roledescription="carousel" aria-label="Who made them? slides" tabindex="0">
         <div class="deck-prog"><span id="deckProg"></span></div>
@@ -584,7 +627,7 @@
       </div>`;
     claimsBody._chapters = chapters;
     document.getElementById("slToc").outerHTML = `<ol class="sl-toc">${chapters.slice(1, -1).map((c) => `<li><button type="button" data-go="${c.start}">${esc(c.name)}</button></li>`).join("")}</ol>`;
-    claimsBody.querySelectorAll("img.ext").forEach((im) => {
+    claimsBody.querySelectorAll("img.ext, .pv-play img").forEach((im) => {
       const fail = () => im.classList.add("failed");
       im.addEventListener("error", fail);
       if (im.complete && !im.naturalWidth && im.getAttribute("src")) im.addEventListener("load", () => {}, { once: true });
@@ -621,6 +664,7 @@
     track.style.transition = instant ? "none" : "";
     track.style.transform = `translateX(${-slideIdx * 100}%)`;
     track.querySelectorAll(".slide").forEach((s, k) => s.setAttribute("aria-hidden", String(k !== slideIdx)));
+    track.querySelectorAll(".pv-yt[data-orig]").forEach((w) => { if (w.closest(".slide") !== track.children[slideIdx]) { w.innerHTML = w.dataset.orig; w.removeAttribute("data-orig"); } });
     const chs = claimsBody._chapters || [];
     let ci = 0;
     chs.forEach((c, k) => { if (c.start <= slideIdx) ci = k; });
@@ -800,6 +844,13 @@
     if (dt) { openSheet(+dt.dataset.det); return; }
     const sh = e.target.closest("[data-sheet]");
     if (sh) { openSheet(sh.dataset.sheet); return; }
+    const pl = e.target.closest(".pv-play");
+    if (pl) {
+      const w = pl.parentElement;
+      w.dataset.orig = w.innerHTML;
+      w.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(pl.dataset.yt)}?autoplay=1&rel=0&playsinline=1" title="${esc(pl.dataset.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+      return;
+    }
     if (e.target.closest(".sd")) return;
     const go = e.target.closest("[data-go]");
     if (go) { goSlide(+go.dataset.go); return; }
