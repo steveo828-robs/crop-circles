@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Crop Circles — Gallery</title>
-  <meta name="theme-color" content="#0c0e12" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#202124" media="(prefers-color-scheme: dark)" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
@@ -21,30 +22,33 @@
   <header class="top">
     <div class="top-row">
       <h1>Crop Circles</h1>
-      <nav class="nav" aria-label="Primary">
-        <a href="#gallery" class="nav-link active" data-view="gallery">Gallery</a>
-        <a href="#hotspots" class="nav-link" data-view="hotspots">Hotspots</a>
-        <a href="#ufo" class="nav-link" data-view="ufo">UFOs</a>
-        <a href="#evidence" class="nav-link" data-view="evidence">Evidence</a>
-        <a href="#claims" class="nav-link" data-view="claims">Claims</a>
-        <a href="#kab" class="nav-link" data-view="kab">Kab</a>
-      </nav>
     </div>
+    <div class="searchbar" id="searchWrap">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <input id="search" type="search" placeholder="Search crop circles" aria-label="Search" autocomplete="off" />
+    </div>
+    <nav class="nav" aria-label="Primary">
+      <a href="#gallery" class="nav-link active" data-view="gallery">Gallery</a>
+      <a href="#hotspots" class="nav-link" data-view="hotspots">Hotspots</a>
+      <a href="#ufo" class="nav-link" data-view="ufo">UFOs</a>
+      <a href="#evidence" class="nav-link" data-view="evidence">Evidence</a>
+      <a href="#claims" class="nav-link" data-view="claims">Claims</a>
+      <a href="#kab" class="nav-link" data-view="kab">Kab</a>
+    </nav>
     <div class="filters" id="galleryFilters">
-      <select id="yearFilter" aria-label="Year">
-        <option value="all">All years</option>
+      <select id="yearFilter" aria-label="Year" class="chip">
+        <option value="all">Any year</option>
       </select>
-      <label class="chk"><input type="checkbox" id="meaningFilter" /> Has meaning</label>
-      <label class="chk"><input type="checkbox" id="anomalyFilter" /> Has strange findings</label>
-      <label class="chk chk-q"><input type="checkbox" id="quartzFilter" /> Near quartz</label>
-      <input id="search" type="search" placeholder="Search…" aria-label="Search" autocomplete="off" />
-      <span id="count" class="count"></span>
+      <label class="chk chip"><input type="checkbox" id="meaningFilter" /> Has meaning</label>
+      <label class="chk chip"><input type="checkbox" id="anomalyFilter" /> Strange findings</label>
+      <label class="chk chip"><input type="checkbox" id="quartzFilter" /> Near quartz</label>
     </div>
     <div id="placeChip" class="place-chip hidden">
       <span id="placeChipText"></span>
       <button type="button" id="placeChipClear" aria-label="Show all places">× Show all</button>
     </div>
   </header>
+  <p id="count" class="count"></p>
 
   <main id="gallery" class="gallery" aria-live="polite"></main>
 

@@ -188,7 +188,7 @@
     const h = repeatOf(item);
     if (!h) return "";
     return `<button type="button" class="repeat-line" data-place="${esc(h.id)}">
-      <span class="badge repeat">Repeat site \u00d7${h.count}</span>
+      <span class="rl-k">Repeat site \u00b7 ${h.count}</span>
       <span>${esc(areaLabel(h))} \u00b7 ${h.count} formations ${esc(yearsText(h))} \u203a</span>
     </button>`;
   }
@@ -220,18 +220,18 @@
     if (ph) placeChipText.textContent = `\ud83d\udccd ${areaLabel(ph)} \u00b7 ${ph.count}`;
     gallery.innerHTML = items.map((item) => {
       const badges = [];
-      if (item.featured) badges.push('<span class="badge featured">Featured</span>');
-      if (item.meaning && item.meaning.summary) badges.push('<span class="badge meaning">Meaning</span>');
-      if (item.anomalies && item.anomalies.length) badges.push('<span class="badge anomaly">Strange findings</span>');
+      if (item.featured) badges.push("Featured");
+      if (item.meaning && item.meaning.summary) badges.push("Meaning");
+      if (item.anomalies && item.anomalies.length) badges.push("Strange findings");
       const rep = repeatOf(item);
-      if (rep) badges.push(`<span class="badge repeat">Repeat site \u00d7${rep.count}</span>`);
-      if (quartzTag.has(item.id)) badges.push('<span class="badge quartz">Near quartz</span>');
+      if (rep) badges.push(`Repeat site \u00b7 ${rep.count}`);
+      if (quartzTag.has(item.id)) badges.push("Near quartz");
       return `<article class="card${item.featured ? " featured" : ""}" tabindex="0" data-id="${esc(item.id)}">
-        <div class="card-photo"><img src="${esc(item.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.opacity=0.2" /></div>
+        <div class="card-photo"><img src="${esc(item.imageUrl)}" alt="${esc(item.name || "")}" loading="lazy" referrerpolicy="no-referrer"${item.imageWidth ? ` width="${item.imageWidth}" height="${item.imageHeight}"` : ""} onerror="this.style.opacity=0.2" /></div>
         <div class="card-body">
           <h2>${esc(item.name || placeText(item))}</h2>
           <p class="card-meta">${esc(whenText(item))} · ${esc(placeText(item))}</p>
-          <div class="badges">${badges.join("")}</div>
+          ${badges.length ? `<p class="tags">${esc(badges.join(" \u00b7 "))}</p>` : ""}
         </div>
       </article>`;
     }).join("");
@@ -628,8 +628,7 @@
     }
     map = L.map(hotspotMapEl, { scrollWheelZoom: false, attributionControl: true, zoomControl: true });
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 18,
-      className: "dark-tiles",
+      maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
     }).addTo(map);
     const layer = L.featureGroup().addTo(map);
@@ -637,10 +636,10 @@
       const repeat = h.count > 1;
       L.circleMarker([h.coord.lat, h.coord.lon], {
         radius: 5 + 4 * Math.sqrt(h.count),
-        color: repeat ? "#c4a574" : "#8b96a8",
+        color: "#1a73e8",
         weight: repeat ? 2 : 1,
-        fillColor: repeat ? "#c4a574" : "#8b96a8",
-        fillOpacity: repeat ? 0.35 : 0.2
+        fillColor: "#1a73e8",
+        fillOpacity: repeat ? 0.35 : 0.15
       }).bindPopup(
         `<b>${esc(areaLabel(h))}</b><br>${h.count} formation${h.count === 1 ? "" : "s"} ${esc(yearsText(h))}` +
         `<br><button type="button" class="popup-show" data-place="${esc(h.id)}">Show in gallery \u203a</button>`
@@ -677,29 +676,43 @@
     return `<figure class="st-media"><button type="button" class="st-item" data-id="${esc(d.id)}" aria-label="Open ${esc(d.name || "")}"><img src="${esc(d.imageUrl)}" alt="${esc(d.name || "")}" loading="lazy" /></button>
       <figcaption>${esc(d.name || "")} \u00b7 ${esc(whenText(d))} \u00b7 Photo: ${esc(d.photoCredit || "")}</figcaption></figure>`;
   }
+  function thumbHtml(c) {
+    const m = c.media || {};
+    if (m.img) return `<a class="st-thumb" href="${esc(m.img)}" target="_blank" rel="noopener"><img src="${esc(m.img)}" alt="${esc(m.alt)}" loading="lazy" /></a>`;
+    if (m.ext) return `<a class="st-thumb" href="${esc(m.link)}" target="_blank" rel="noopener"><span class="st-thumb-fb">Photo needs signal</span><img src="${esc(m.ext)}" alt="${esc(m.alt)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add('failed')" /></a>`;
+    const d = c.item && allData.find((x) => x.id === c.item);
+    if (d) return `<button type="button" class="st-thumb st-item" data-id="${esc(d.id)}" aria-label="Open ${esc(d.name || "")}"><img src="${esc(d.imageUrl)}" alt="${esc(d.name || "")}" loading="lazy" /></button>`;
+    return "";
+  }
+  function creditLine(c) {
+    const m = c.media || {}, S = X().S;
+    const parts = [];
+    if (m.img || m.ext) parts.push(S[m.credit] ? xLinks([m.credit]) : esc(m.credit));
+    [c.item, c.item2].filter(Boolean).forEach((id) => { const d = allData.find((x) => x.id === id); if (d) parts.push(`${esc(d.name || "")}: photo ${esc(d.photoCredit || "")}`); });
+    return parts.length ? `<p class="st-credit">${parts.join(" \u00b7 ")}</p>` : "";
+  }
   function storyCard(c, idx) {
-    const S = X().S;
+    const thumb = thumbHtml(c);
     let media = "";
-    if (c.media && c.media.img) media = `<figure class="st-media"><img src="${esc(c.media.img)}" alt="${esc(c.media.alt)}" loading="lazy" /><figcaption>${S[c.media.credit] ? xLinks([c.media.credit]) : esc(c.media.credit)}</figcaption></figure>`;
-    else if (c.media && c.media.ext) media = extImg(c.media.ext, c.media.alt, c.media.link, c.media.credit);
-    else if (c.media && c.media.yt) media = ytCard(c.media.yt, c.media.label);
-    else if (c.media && c.media.link) media = `<a class="st-watch" href="${esc(c.media.link)}" target="_blank" rel="noopener">\u25b6 ${esc(c.media.label)} \u2197</a>${c.media.note ? `<p class="st-small">${esc(c.media.note)}</p>` : ""}`;
-    if (c.item) media += itemBtn(c.item);
-    if (c.item2) media += itemBtn(c.item2);
+    if (c.media && c.media.yt) media = ytCard(c.media.yt, c.media.label);
+    else if (c.media && c.media.link && !c.media.img && !c.media.ext) media = `<a class="st-watch" href="${esc(c.media.link)}" target="_blank" rel="noopener">\u25b6 ${esc(c.media.label)}</a>${c.media.note ? `<p class="st-small">${esc(c.media.note)}</p>` : ""}`;
+    if (c.item2) { const d = allData.find((x) => x.id === c.item2); if (d) media += `<button type="button" class="st-wide st-item" data-id="${esc(d.id)}" aria-label="Open ${esc(d.name || "")}"><img src="${esc(d.imageUrl)}" alt="${esc(d.name || "")}" loading="lazy" /></button>`; }
     let stat = "";
     if (c.stat === "hotspots") {
       const top = hs.hotspots.filter((h) => h.count > 1).slice(0, 3);
-      stat = `<ol class="st-top">${top.map((h) => `<li><button type="button" data-place="${esc(h.id)}"><b>${h.count}</b><span>${esc(areaLabel(h))}</span></button></li>`).join("")}</ol>
-        <p class="st-small">Formations at the top repeat sites in this app’s gallery (sites within ~${hs.radiusKm} km grouped). Tap to see them.</p>`;
+      stat = `<ul class="st-rows">${top.map((h) => `<li><button type="button" data-place="${esc(h.id)}"><span>${esc(areaLabel(h))}</span><b>${h.count} formations</b></button></li>`).join("")}</ul>`;
     }
-    const facts = (c.facts || []).map(([t, ...k]) => `<li>${esc(t)} <span class="st-src">${xLinks(k)}</span></li>`).join("");
-    const q = c.quote ? `<blockquote class="st-q"><p>${esc(c.quote[0])}</p><cite>\u2014 ${esc(c.quote[1])}</cite></blockquote>` : "";
-    const note = c.note ? `<p class="st-belief"><b>Belief, not measurement.</b> ${esc(c.note.replace(/^Belief, not measured science: /, ""))} <span class="st-src">${xLinks(c.noteSrc)}</span></p>` : "";
-    const go = c.go ? `<button type="button" class="st-go" data-view="${esc(c.go[0])}">${esc(c.go[1])}</button>` : "";
-    const other = c.other && c.other.length ? `<details class="st-other"><summary>The other side</summary><ul>${c.other.map(([t, ...k]) => `<li>${esc(t)} <span class="st-src">${xLinks(k)}</span></li>`).join("")}</ul></details>` : "";
+    const facts = (c.facts || []).map(([t]) => `<p>${esc(t)}</p>`).join("");
+    const q = c.quote ? `<blockquote class="st-q">${esc(c.quote[0])}<cite>${esc(c.quote[1])}</cite></blockquote>` : "";
+    const note = c.note ? `<p class="st-belief"><b>Belief, not measurement:</b> ${esc(c.note.replace(/^Belief, not measured science: /, ""))}</p>` : "";
+    const go = c.go ? `<button type="button" class="st-next" data-view="${esc(c.go[0])}">${esc(c.go[1])}</button>` : "";
+    const keys = [...new Set((c.facts || []).flatMap(([, ...k]) => k).concat(c.noteSrc || []))];
+    const srcs = keys.length ? `<p class="st-mh">Sources</p><ul class="st-srcs">${keys.map((k) => `<li>${xLinks([k])}</li>`).join("")}</ul>` : "";
+    const other = c.other && c.other.length ? `<p class="st-mh">The other side</p><ul class="st-oth">${c.other.map(([t, ...k]) => `<li>${esc(t)} <span class="st-src">${xLinks(k)}</span></li>`).join("")}</ul>` : "";
     return `<article class="st-card" id="st-${idx}">
-      <p class="st-kick">${esc(c.kicker || "")}</p><h3>${esc(c.title)}</h3>${c.place ? `<p class="st-place">${esc(c.place)}</p>` : ""}
-      ${media}${stat}${q}${facts ? `<ul class="st-facts">${facts}</ul>` : ""}${note}${go}${other}</article>`;
+      <div class="st-row"><div class="st-txt"><p class="st-kick">${esc(c.kicker || "")}${c.place ? ` \u00b7 ${esc(c.place)}` : ""}</p><h3>${esc(c.title)}</h3></div>${thumb}</div>
+      ${media}${creditLine(c)}<div class="st-snip">${facts}</div>${stat}${q}${note}
+      ${srcs || other ? `<details class="st-more"><summary>More</summary>${other}${srcs}</details>` : ""}${go}</article>`;
   }
   function quartzCard() {
     const Q = X().QUARTZ;
@@ -709,15 +722,14 @@
     }).join("");
     return `<article class="st-card st-quartz" id="st-quartz">
       <p class="st-kick">Quartz ground</p><h3>${Q.tagged.length} formations on sarsen ground</h3>
-      <p class="st-lead">Formations in this gallery within ${Q.ruleKm} km of a documented field of sarsens — quartz sandstone boulders.</p>
-      <div class="st-btns"><button type="button" class="st-go" data-qmap="1">Show quartz ground on the map</button><button type="button" class="st-go alt" data-qgal="1">See them in the Gallery</button></div>
+      <div class="st-snip"><p>Formations in this gallery within ${Q.ruleKm} km of a documented field of sarsens — quartz sandstone boulders.</p></div>
       <div class="hs-strip st-strip">${thumbs}</div>
-      <ul class="st-facts">${Q.sites.map((s) => `<li><b>${esc(s.name)}</b> — ${esc(s.why)} <span class="st-src">${xLinks(s.src)}</span></li>`).join("")}</ul>
-      <p class="st-small">${esc(Q.kabNote)}</p>
-      <details class="st-other"><summary>How we tagged them</summary><ul><li>${esc(Q.rule)}</li><li>Coordinates in this gallery are approximate (place-name level), so distances are approximate too.</li></ul></details></article>`;
+      <div class="st-links"><button type="button" class="st-next" data-qmap="1">Show on the map</button><button type="button" class="st-next" data-qgal="1">See them in the Gallery</button></div>
+      <details class="st-more"><summary>More</summary><p class="st-mh">Sarsen sites</p><ul class="st-oth">${Q.sites.map((s) => `<li><b>${esc(s.name)}</b> — ${esc(s.why)} <span class="st-src">${xLinks(s.src)}</span></li>`).join("")}</ul>
+      <p class="st-mh">How we tagged them</p><ul class="st-oth"><li>${esc(Q.rule)}</li><li>Coordinates in this gallery are approximate (place-name level), so distances are approximate too.</li><li>${esc(Q.kabNote)}</li></ul></details></article>`;
   }
   function storyHead(sec, others) {
-    return `<header class="st-head"><p class="st-case">The case for UFOs at the hotspots</p><h2>${esc(sec.title)}</h2><p class="st-sub">${esc(sec.sub)}</p><p class="st-lead">${esc(sec.intro)}</p>
+    return `<header class="st-head"><p class="st-case">The case for UFOs at the hotspots</p><h2>${esc(sec.title)}</h2><p class="st-lead">${esc(sec.intro)}</p>
       <nav class="st-chips" aria-label="The case">${others.map(([v, l]) => `<button type="button" data-view="${v}"${v === currentView ? ' aria-current="true"' : ""}>${esc(l)}</button>`).join("")}</nav></header>`;
   }
   const CASE_NAV = [["hotspots", "1 \u00b7 Why here?"], ["ufo", "2 \u00b7 Lights"], ["evidence", "3 \u00b7 Instruments"]];
@@ -757,15 +769,15 @@
       quartzLayer = L.featureGroup();
       const Q = X().QUARTZ;
       Q.sites.forEach((s) => {
-        L.circle([s.lat, s.lon], { radius: Q.ruleKm * 1000, color: "#b48cff", weight: 1, fillColor: "#b48cff", fillOpacity: 0.12 }).addTo(quartzLayer);
-        L.circleMarker([s.lat, s.lon], { radius: 6, color: "#e6d9ff", weight: 2, fillColor: "#b48cff", fillOpacity: 0.9 })
+        L.circle([s.lat, s.lon], { radius: Q.ruleKm * 1000, color: "#188038", weight: 1, fillColor: "#188038", fillOpacity: 0.08 }).addTo(quartzLayer);
+        L.circleMarker([s.lat, s.lon], { radius: 6, color: "#fff", weight: 2, fillColor: "#188038", fillOpacity: 1 })
           .bindPopup(`<b>${esc(s.name)}</b><br>${esc(s.why)}`).addTo(quartzLayer);
       });
     }
     if (!map.hasLayer(quartzLayer)) quartzLayer.addTo(map);
     hotspotMapEl.scrollIntoView({ behavior: "smooth", block: "center" });
     setTimeout(() => { map.invalidateSize(); map.fitBounds(quartzLayer.getBounds(), { padding: [20, 20], maxZoom: 12 }); }, 350);
-    mapNote.textContent = "Purple = quartz ground: documented sarsen sites with a 3 km ring. Gold = formation sites.";
+    mapNote.textContent = "Green = quartz ground: documented sarsen sites with a 3 km ring. Blue = formation sites.";
   }
 
   /* ——— v10: Kab tab ——— */
@@ -846,6 +858,8 @@
     gallery.classList.toggle("hidden", !isG);
     gallery.style.display = isG ? "" : "none";
     galleryFilters.style.display = isG ? "" : "none";
+    document.getElementById("searchWrap").style.display = isG ? "" : "none";
+    countEl.style.display = isG ? "" : "none";
     evidence.classList.toggle("hidden", name !== "evidence");
     hotspotsView.classList.toggle("hidden", name !== "hotspots");
     claimsView.classList.toggle("hidden", name !== "claims");
