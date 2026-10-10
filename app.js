@@ -19,6 +19,8 @@
   const mapNote = document.getElementById("mapNote");
   const hotspotsLede = document.getElementById("hotspotsLede");
   const orbCard = document.getElementById("orbCard");
+  const claimsView = document.getElementById("claims");
+  const claimsBody = document.getElementById("claimsBody");
   const placeChip = document.getElementById("placeChip");
   const placeChipText = document.getElementById("placeChipText");
 
@@ -267,6 +269,97 @@
     orbCard.dataset.ready = "1";
   }
 
+  function srcLinks(keys) {
+    const S = window.CC_SOURCES || {};
+    return keys.filter((k) => S[k]).map((k) =>
+      `<a href="${esc(S[k][1])}" target="_blank" rel="noopener">${esc(S[k][0])}</a>`).join(" \u00b7 ");
+  }
+
+  function pointList(items, cls) {
+    return `<ul class="cl-points${cls ? " " + cls : ""}">${items.map(([text, ...keys]) =>
+      `<li><p>${esc(text)}</p><p class="cl-src">${srcLinks(keys)}</p></li>`).join("")}</ul>`;
+  }
+
+  function renderClaims() {
+    if (claimsBody.dataset.ready) return;
+    const C = window.CC_CLAIMS;
+    if (!C) { claimsBody.innerHTML = '<p class="map-off">Claims content unavailable.</p>'; return; }
+    document.getElementById("claimsLede").textContent = C.lede;
+
+    const who = C.claimants.map((c) => `
+      <article class="cl-card">
+        <h4>${esc(c.title)}</h4>
+        <p class="cl-sub">${esc(c.sub)}</p>
+        ${pointList(c.points)}
+        ${c.counter && c.counter.length ? `<p class="cl-label">Counterpoints</p>${pointList(c.counter, "counter")}` : ""}
+        ${c.note ? `<p class="cl-note">${esc(c.note)}${c.noteSrc ? `<span class="cl-src"> ${srcLinks(c.noteSrc)}</span>` : ""}</p>` : ""}
+        ${c.links ? `<div class="links">${c.links.map(([l, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(l)}</a>`).join("")}</div>` : ""}
+      </article>`).join("");
+
+    const tiles = C.compare.tiles.map((t) => {
+      if (t.kind === "photo") {
+        const it = allData.find((d) => d.id === t.id);
+        if (!it) return "";
+        return `<button type="button" class="cl-tile photo" data-id="${esc(it.id)}">
+          <img src="${esc(it.imageUrl)}" alt="${esc(t.title)}" loading="lazy" />
+          <span class="cl-tile-t">${esc(t.title)}</span>
+          <span class="cl-tile-d">${esc(t.text)}</span>
+        </button>`;
+      }
+      return `<div class="cl-tile text">
+        <span class="cl-tile-big">\u25ef</span>
+        <span class="cl-tile-t">${esc(t.title)}</span>
+        <span class="cl-tile-d">${esc(t.text)}</span>
+        <span class="cl-src">${srcLinks(t.src)}${t.link ? ` \u00b7 <a href="${esc(t.link)}" target="_blank" rel="noopener">${esc(t.linkLabel)}</a>` : ""}</span>
+      </div>`;
+    }).join("");
+
+    const rows = C.timing.rows.map((r) => `
+      <article class="cl-time">
+        <h4>${esc(r.name)}</h4>
+        <p class="cl-sub">${esc(r.date)}</p>
+        <div class="cl-time-grid">
+          <div class="cl-col build"><p class="cl-label">Reported build time</p>${pointList(r.build)}</div>
+          <div class="cl-col window"><p class="cl-label">Reported window</p>${pointList(r.window)}</div>
+        </div>
+      </article>`).join("");
+
+    claimsBody.innerHTML = `
+      <section class="cl-sec" id="cl-who"><h3>1 \u00b7 Who claimed</h3>${who}</section>
+
+      <section class="cl-sec" id="cl-compare"><h3>2 \u00b7 Simple vs complex</h3>
+        <div class="cl-tiles">${tiles}</div>
+        <article class="cl-card">
+          <h4>Plants: bent vs broken?</h4>
+          ${C.compare.image ? `<figure class="cl-fig"><img src="${esc(C.compare.image.url)}" alt="${esc(C.compare.image.caption)}" loading="lazy" /><figcaption>${esc(C.compare.image.caption)}</figcaption></figure>` : ""}
+          ${pointList(C.compare.plants)}
+          <p class="cl-label">Published counterpoints</p>
+          ${pointList(C.compare.plantCounter, "counter")}
+        </article>
+      </section>
+
+      <section class="cl-sec" id="cl-time"><h3>3 \u00b7 Time vs window</h3>
+        ${rows}
+        <article class="cl-card">
+          <h4>How long did claimed builds take?</h4>
+          ${pointList(C.timing.benchmarks)}
+          <p class="cl-note">${esc(C.timing.note)}</p>
+        </article>
+      </section>
+
+      <section class="cl-sec" id="cl-mistakes"><h3>4 \u00b7 Where are the mistakes?</h3>
+        <article class="cl-card">
+          <h4>\u201cNo mistakes\u201d \u2014 who says so</h4>
+          ${pointList(C.mistakes.noErrors)}
+        </article>
+        <article class="cl-card">
+          <h4>Reported errors &amp; tell-tale marks</h4>
+          ${pointList(C.mistakes.errors, "counter")}
+        </article>
+      </section>`;
+    claimsBody.dataset.ready = "1";
+  }
+
   function renderHotspots() {
     const repeats = hs.hotspots.filter((h) => h.count > 1);
     const inRepeats = repeats.reduce((s, h) => s + h.count, 0);
@@ -353,12 +446,28 @@
     galleryFilters.style.display = isG ? "" : "none";
     evidence.classList.toggle("hidden", name !== "evidence");
     hotspotsView.classList.toggle("hidden", name !== "hotspots");
+    claimsView.classList.toggle("hidden", name !== "claims");
+    if (name === "claims") renderClaims();
     const ph = placeFilterId && hs.hotspots.find((h) => h.id === placeFilterId);
     placeChip.classList.toggle("hidden", !(isG && ph));
     if (name === "evidence") { renderOrbCard(); renderEvidence(); }
     if (name === "hotspots") renderHotspots();
     if (history.replaceState) history.replaceState(null, "", "#" + name);
   }
+
+  claimsView.addEventListener("click", (e) => {
+    const j = e.target.closest("[data-jump]");
+    if (j) {
+      const el = document.getElementById(j.dataset.jump);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const t = e.target.closest(".cl-tile.photo");
+    if (t) {
+      const item = allData.find((d) => d.id === t.dataset.id);
+      if (item) openDetail(item);
+    }
+  });
 
   hotspotList.addEventListener("click", (e) => {
     const t = e.target.closest(".hs-thumb");
@@ -434,6 +543,7 @@
       render();
       if (location.hash === "#evidence") showView("evidence");
       else if (location.hash === "#hotspots") showView("hotspots");
+      else if (location.hash === "#claims") showView("claims");
     })
     .catch((err) => {
       gallery.innerHTML = `<p style="padding:1rem;color:#f0a0a0">Failed to load dataset: ${esc(err.message)}</p>`;
