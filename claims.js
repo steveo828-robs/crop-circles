@@ -65,6 +65,31 @@
   const CLAIMS = {
     lede: "People who said they made crop circles — and the counterpoints researchers raise. Every line names who said it; this app doesn’t decide how any formation was made.",
 
+    plain: {
+      lede: "Some people say they made crop circles. Here is what they said, what others say back, and where to check. This app doesn’t decide who is right.",
+      heads: { who: "Who says they made them?", compare: "Simple circles vs complex designs", time: "How long did it take?", mistakes: "Where are the mistakes?" },
+      cards: {
+        "Doug Bower & Dave Chorley": "In 1991 two men from Southampton told a newspaper they had been making circles since the late 1970s — with a plank, rope and a cap.",
+        "Circlemakers": "A UK art group that openly makes formations for adverts and TV, and writes up how long each one took.",
+        "Other documented claims": "A 1992 making contest, a claim about the 1996 Julia Set, and a researcher’s view."
+      },
+      years: "In these counts, reports rose fast in the late 1980s, peaked in the 1990s, and are now a few dozen a year.",
+      gallery: "Each was claimed by the people named. Most photos can’t be shown here, so tiles link to them. Swipe sideways →",
+      tiles: "Doug & Dave described a plain swirled circle. Some later formations have hundreds of circles.",
+      plants: "Some researchers say stalks in unexplained formations are bent and stretched at the nodes — the knuckle-like joints on a stalk. Critics say flattening with a plank can do the same.",
+      lay: "Close-ups of flattened crop, side by side. We found no licensed close-up of a claimed man-made lay, so that side links out.",
+      time: "Paid builds were often done in daylight, with permission, sometimes over two or three days. The big unclaimed ones were reported to have appeared overnight.",
+      statA: { big: "≈ 2 h – 3 days", small: "Paid or test builds, as reported by the makers, their clients or a researcher", src: ["cmHistory", "fi18", "cmKorn", "lego24", "ansty16"] },
+      statB: { big: "≈ 4 h", small: "Full darkness on the night Milk Hill (409 circles) was reported — Swindon figures", src: ["tadSwindon"] },
+      windows: {
+        "Julia Set, near Stonehenge": ["Claimed: 3 people, about 2¾ h, at night", "Reported: appeared within 45 min, in daylight"],
+        "Milk Hill ‘Galaxy’": ["Unclaimed. Estimate: ~6 people, ~5 h (journalist’s guess)", "Reported: ~4 h of full darkness; no mud after heavy rain"],
+        "Barbury Castle π": ["Unclaimed", "Reported: rain the night before, no mud inside"]
+      },
+      noErrors: "Some researchers point to precision and clean, mud-free stalks.",
+      errors: "Others point to slips, uneven lines, broken stalks and footprints."
+    },
+
     claimants: [
       {
         title: "Doug Bower & Dave Chorley",
@@ -229,8 +254,8 @@
         ["Sarraltroff 2018 — France 3 reported that the YouTubers filmed themselves making it with planks and ropes (video, not hosted here).", "fi18"]
       ],
       reported: [
-        { img: "img/anomalies/blt_node_length.jpg", label: "Reported by BLT Research (W.C. Levengood)", text: "Wheat samples vs controls: “172% mean node length increase” at the node beneath the seed-head, as captioned by BLT.", src: ["blt"] },
         { img: "img/anomalies/blt_node_italy.jpg", label: "Reported by BLT Research", text: "Presented by BLT as an elongated node from an Italian formation sample.", src: ["blt"] },
+        { img: "img/anomalies/blt_node_length.jpg", label: "Reported by BLT Research (W.C. Levengood)", text: "Wheat samples vs controls: “172% mean node length increase” at the node beneath the seed-head, as captioned by BLT.", src: ["blt"] },
         { img: "img/anomalies/blt_plantab2.jpg", label: "Reported by BLT Research", text: "One of the plant-abnormality photos on BLT’s page.", src: ["blt"] }
       ],
       counterNote: ["Grassi, Cocheo & Russo (CICAP) argue node elongation is what “we should expect when whatever kind of mechanical force flattens the plants, rope and wood plank included.”", "grassi"]

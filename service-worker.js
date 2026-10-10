@@ -1,7 +1,7 @@
 /* Crop Circles — service worker (relative paths; works under any GitHub Pages subpath) */
 "use strict";
 
-const VERSION = "v4-claims-time";
+const VERSION = "v5-claims-story";
 const SHELL_CACHE = "crop-circles-shell-" + VERSION;
 const IMAGE_CACHE = "crop-circles-images-v1"; // photos unchanged; keep this cache across shell updates
 
