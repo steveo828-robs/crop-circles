@@ -1,0 +1,2 @@
+Inter (Rasmus Andersson) and Fraunces (Undercase Type) — SIL Open Font License 1.1.
+Files: latin subsets from Fontsource (https://fontsource.org). License: https://openfontlicense.org

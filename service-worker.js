@@ -1,7 +1,7 @@
 /* Crop Circles — service worker (relative paths; works under any GitHub Pages subpath) */
 "use strict";
 
-const VERSION = "v11-google-ui";
+const VERSION = "v12-night-field";
 const SHELL_CACHE = "crop-circles-shell-" + VERSION;
 const IMAGE_CACHE = "crop-circles-images-v1"; // photos unchanged; keep this cache across shell updates
 
@@ -12,6 +12,11 @@ const SHELL = [
   "app.js",
   "hotspots.js",
   "claims.js",
+  "fonts/fraunces-400.woff2",
+  "fonts/fraunces-500.woff2",
+  "fonts/inter-400.woff2",
+  "fonts/inter-500.woff2",
+  "fonts/inter-600.woff2",
   "extras.js",
   "kab.json",
   "img/whyhere/avebury.jpg",

@@ -636,9 +636,9 @@
       const repeat = h.count > 1;
       L.circleMarker([h.coord.lat, h.coord.lon], {
         radius: 5 + 4 * Math.sqrt(h.count),
-        color: "#1a73e8",
+        color: "#d9b56b",
         weight: repeat ? 2 : 1,
-        fillColor: "#1a73e8",
+        fillColor: "#d9b56b",
         fillOpacity: repeat ? 0.35 : 0.15
       }).bindPopup(
         `<b>${esc(areaLabel(h))}</b><br>${h.count} formation${h.count === 1 ? "" : "s"} ${esc(yearsText(h))}` +
@@ -769,15 +769,15 @@
       quartzLayer = L.featureGroup();
       const Q = X().QUARTZ;
       Q.sites.forEach((s) => {
-        L.circle([s.lat, s.lon], { radius: Q.ruleKm * 1000, color: "#188038", weight: 1, fillColor: "#188038", fillOpacity: 0.08 }).addTo(quartzLayer);
-        L.circleMarker([s.lat, s.lon], { radius: 6, color: "#fff", weight: 2, fillColor: "#188038", fillOpacity: 1 })
+        L.circle([s.lat, s.lon], { radius: Q.ruleKm * 1000, color: "#7fae8a", weight: 1, fillColor: "#7fae8a", fillOpacity: 0.1 }).addTo(quartzLayer);
+        L.circleMarker([s.lat, s.lon], { radius: 6, color: "#0b0f14", weight: 2, fillColor: "#7fae8a", fillOpacity: 1 })
           .bindPopup(`<b>${esc(s.name)}</b><br>${esc(s.why)}`).addTo(quartzLayer);
       });
     }
     if (!map.hasLayer(quartzLayer)) quartzLayer.addTo(map);
     hotspotMapEl.scrollIntoView({ behavior: "smooth", block: "center" });
     setTimeout(() => { map.invalidateSize(); map.fitBounds(quartzLayer.getBounds(), { padding: [20, 20], maxZoom: 12 }); }, 350);
-    mapNote.textContent = "Green = quartz ground: documented sarsen sites with a 3 km ring. Blue = formation sites.";
+    mapNote.textContent = "Green = quartz ground: documented sarsen sites with a 3 km ring. Gold = formation sites.";
   }
 
   /* ——— v10: Kab tab ——— */
